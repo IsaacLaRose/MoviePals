@@ -1,6 +1,7 @@
 require('express');
 require('mongodb');
 const bcrypt = require('bcryptjs');
+const { ObjectId } = require('mongodb');
 require('dotenv').config({ path: '../.env' });
 
 exports.setApp = function (app, client) {
@@ -10,7 +11,7 @@ exports.setApp = function (app, client) {
 
     try {
       const existingUser = await db.collection('users').findOne({ $or: [{ username }, { email }] });
-      //Ensure no duplicate usernames
+      //Ensure no duplicate usernames/emails
       if (existingUser) {
         return res.status(400).json({ error: 'Username or email already exists.' });
       }
@@ -80,7 +81,7 @@ exports.setApp = function (app, client) {
     const { userId, title, year, rating, comment, dateViewed } = req.body;
     const db = client.db('Movie_App');
 
-    //Ensure proper userId, imdbId, and that the rating is between 1-5
+    //Ensure proper userId, title and year
     if (!userId || !title || !year) {
       return res.status(400).json({ error: 'Missing required fields (userId, title, year)' });
     }
@@ -119,7 +120,7 @@ exports.setApp = function (app, client) {
         });
       }
     } catch (e) {
-      console.error(e.message);
+      console.error(e);
       res.status(500).json({ error: 'Server error adding or updating rating' });
     }
   });
@@ -139,7 +140,7 @@ exports.setApp = function (app, client) {
       res.status(200).json({ movies });
     } catch (e) {
       //Issue getting ratings
-      console.log(e.message);
+      console.error(e);
       res.status(500).json({ error: 'Error getting ratings' });
     }
   });
@@ -158,7 +159,7 @@ exports.setApp = function (app, client) {
       res.status(200).json({ message: 'Successfully deleted rating.' });
     } catch (e) {
       //Error deleting rating
-      console.log(e.message);
+      console.error(e);
       res.status(500).json({ error: 'Error deleting rating' });
     }
   });
@@ -238,7 +239,7 @@ exports.setApp = function (app, client) {
         year: movie.year,
         rating,
         comment,
-        dateViewed : dateViewed || new Date().toDateString,
+        dateViewed: dateViewed || new Date().toDateString,
         dateCreated: new Date()
       })
 
@@ -259,4 +260,64 @@ exports.setApp = function (app, client) {
       return res.status(500).json({ error: 'Error moving movie to seen' });
     }
   });
-}
+
+  app.post('/api/addFriend', async (req, res, next) => {
+    const { userId, friendsId, firstName, lastName, username } = req.body;
+    const db = client.db('Movie_App');
+
+    if (!userId || !friendsId || !firstName || !lastName || !username) {
+      return res.status(400).json({ error: 'Missing required fields (userId, friendsId, firstName, lastName, username)' });
+    }
+
+    try {
+      const existing = await db.collection('friends').findOne({ $or: [{ userId, friendsId }, { userId: friendsId, friendsId: userId },], });
+
+      if (existing) {
+        return res.status(400).json({ error: 'Friend already added' });
+      }
+
+      //Ensure we are adding both ways for friends
+      const friendUser = await db.collection('users').findOne({_id : new ObjectId(friendsId) });
+      await db.collection('friends').insertMany([
+        {
+          userId,
+          friendsId,
+          firstName,
+          lastName,
+          username,
+          dateAdded: new Date()
+        },
+        {
+          userId: friendsId,
+          friendsId: userId,
+          firstName: friendUser.firstName,
+          lastName: friendUser.lastName,
+          username: friendUser.username,
+          dateAdded: new Date(),
+        },
+      ]);
+
+      res.status(201).json({ message: 'Friend added successfully' });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Error adding friend' });
+    }
+  });
+
+  app.post('/api/removeFriend', async (req, res, next) => {
+    const { userId, friendsId } = req.body;
+    const db = client.db('Movie_App');
+
+    try {
+      //Ensure we delete both ways when deleting
+      const result = await db.collection('friends').deleteMany({ $or : [{userId, friendsId}, {userId: friendsId, friendsId: userId},],});
+
+      if (result.deletedCount == 0) {
+        return res.status(404).json({ error: 'Friend not found' });
+      }
+      res.status(200).json({ message: 'Successfully removed friend.' });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Error deleting rating' });
+    }
+  });
