@@ -262,11 +262,11 @@ exports.setApp = function (app, client) {
   });
 
   app.post('/api/addFriend', async (req, res, next) => {
-    const { userId, friendsId, firstName, lastName, username } = req.body;
+    const { userId, friendsId } = req.body;
     const db = client.db('Movie_App');
 
-    if (!userId || !friendsId || !firstName || !lastName || !username) {
-      return res.status(400).json({ error: 'Missing required fields (userId, friendsId, firstName, lastName, username)' });
+    if (!userId || !friendsId) {
+      return res.status(400).json({ error: 'Missing required fields (userId, friendsId)' });
     }
 
     try {
@@ -277,22 +277,23 @@ exports.setApp = function (app, client) {
       }
 
       //Ensure we are adding both ways for friends
-      const friendUser = await db.collection('users').findOne({_id : new ObjectId(friendsId) });
+      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+      const friendUser = await db.collection('users').findOne({ _id: new ObjectId(friendsId) });
       await db.collection('friends').insertMany([
         {
           userId,
           friendsId,
-          firstName,
-          lastName,
-          username,
-          dateAdded: new Date()
+          firstName: friendUser.firstName,
+          lastName: friendUser.lastName,
+          username: friendUser.username,
+          dateAdded: new Date(),
         },
         {
           userId: friendsId,
           friendsId: userId,
-          firstName: friendUser.firstName,
-          lastName: friendUser.lastName,
-          username: friendUser.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
           dateAdded: new Date(),
         },
       ]);
@@ -310,7 +311,7 @@ exports.setApp = function (app, client) {
 
     try {
       //Ensure we delete both ways when deleting
-      const result = await db.collection('friends').deleteMany({ $or : [{userId, friendsId}, {userId: friendsId, friendsId: userId},],});
+      const result = await db.collection('friends').deleteMany({ $or: [{ userId, friendsId }, { userId: friendsId, friendsId: userId },], });
 
       if (result.deletedCount == 0) {
         return res.status(404).json({ error: 'Friend not found' });
@@ -321,3 +322,33 @@ exports.setApp = function (app, client) {
       res.status(500).json({ error: 'Error deleting rating' });
     }
   });
+
+  app.post('/api/viewFriendsList', async (req, res, next) => {
+    const { userId } = req.body;
+    const db = client.db('Movie_App');
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing required field: userId' });
+    }
+
+    try {
+      // Fetch all friends for this userId directly
+      const friendsList = await db.collection('friends')
+        .find({ userId })
+        .project({
+          _id: 0,
+          friendsId: 1,
+          firstName: 1,
+          lastName: 1,
+          username: 1,
+          dateAdded: 1
+        })
+        .toArray();
+
+      res.status(200).json({ friendsList });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Error fetching friends list' });
+    }
+  });
+}
