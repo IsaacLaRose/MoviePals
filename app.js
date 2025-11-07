@@ -1,6 +1,6 @@
 (() => {
   const API_BASE = './api/';
-  const API_KEY = "eed58c3d"; // ✅ your OMDb key
+  const API_KEY = "eed58c3d";
 
   // ===== DOM HELPERS =====
   const id = (x) => document.getElementById(x);
@@ -51,7 +51,7 @@
   // ===== STATE =====
   let currentUser = null;
   let currentMovie = null;
-  let userRatings = {}; // { imdbID: { stars, comment, title, poster } }
+  let userRatings = {}; // { stars, comment, title, poster }
 
   // ===== API HANDLER =====
   async function api(endpoint, payload) {
