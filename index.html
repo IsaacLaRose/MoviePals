@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CineConnect – Movie Ratings</title>
+  <meta name="description" content="A social movie rating app where users can log in, rate movies, and share reviews." />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="css/styles.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- ===== AUTH VIEW (Login & Register) ===== -->
+  <main id="authView">
+    <!-- Login Section -->
+    <section class="card" id="loginSection">
+      <h2>Welcome to <span class="highlight">CineConnect</span></h2>
+      <p class="tagline">Rate movies. Share opinions. Discover new favorites.</p>
+      <form id="loginForm" class="flex">
+        <input type="text" id="login_login" placeholder="Username" autocomplete="username" required />
+        <input type="password" id="login_password" placeholder="Password" autocomplete="current-password" required />
+        <button type="submit" class="buttons">Login</button>
+      </form>
+      <div class="alt-action">
+        <button id="showRegister" type="button" class="link-btn">Create an account</button>
+      </div>
+      <div id="loginMessage" class="msg"></div>
+    </section>
+
+    <!-- Register Section -->
+    <section class="card hidden" id="registerSection">
+      <h2>Join <span class="highlight">CineConnect</span></h2>
+      <form id="registerForm" class="flex">
+        <div class="row-2 grid">
+          <input type="text" id="reg_first" placeholder="First Name" required />
+          <input type="text" id="reg_last" placeholder="Last Name" required />
+        </div>
+        <input type="text" id="reg_login" placeholder="Username" autocomplete="username" required />
+        <input type="password" id="reg_password" placeholder="Password" autocomplete="new-password" required />
+        <button type="submit" class="buttons">Register</button>
+      </form>
+      <div class="alt-action">
+        <button id="showLogin" type="button" class="link-btn">Already have an account?</button>
+      </div>
+      <div id="registerMessage" class="msg"></div>
+    </section>
+  </main>
+
+  <!-- ===== MAIN APP VIEW ===== -->
+  <main id="appView" class="hidden">
+    
+    <!-- ===== NAVBAR ===== -->
+    <header id="navbar">
+      <div class="navbar-container">
+        <a href="#" class="logo" id="homeLogo">🎬 CineConnect</a>
+        <input id="searchMovies" type="text" placeholder="Search movies..." />
+        <div class="nav-actions">
+          <button id="profileBtn" class="buttons small">My Profile</button>
+          <button id="logoutBtn" class="buttons small">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== FEED VIEW ===== -->
+    <section id="feedView">
+      <h2 class="section-title">Recent Ratings</h2>
+      <div id="movieFeed" class="feed-grid">
+        <!-- Movie cards dynamically inserted here -->
+      </div>
+      <div id="emptyFeed" class="empty hidden">No ratings yet.</div>
+    </section>
+
+    <!-- ===== MOVIE DETAIL PAGE ===== -->
+    <section id="moviePage" class="hidden">
+      <button id="backToFeed" class="link-btn">← Back to Feed</button>
+
+      <div class="movie-details">
+        <img id="moviePoster" src="assets/placeholder.jpg" alt="Movie poster" />
+        <div class="movie-info">
+          <h2 id="movieTitle">Movie Title</h2>
+          <p id="movieDescription">A short movie description will go here...</p>
+
+          <div class="rating-section">
+            <h3>Your Rating</h3>
+            <div id="ratingStars" class="stars">
+              <span data-value="1">★</span>
+              <span data-value="2">★</span>
+              <span data-value="3">★</span>
+              <span data-value="4">★</span>
+              <span data-value="5">★</span>
+            </div>
+            <textarea id="ratingComment" placeholder="Write your thoughts..."></textarea>
+            <button id="submitRating" class="buttons small" style="width:auto;margin-top:0.5rem;">Post Review</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="allReviews">
+        <h3>Other Reviews</h3>
+        <div id="reviewsList">
+          <div class="review-card">
+            <strong>Sample User</strong>
+            <div class="stars">★★★★☆</div>
+            <p>This is a sample review — it will be replaced dynamically later.</p>
+            <small>Posted on Nov 7, 2025</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROFILE VIEW ===== -->
+    <section id="profileView" class="hidden">
+      <header class="profile-header flex">
+        <h2 id="usernameHeader">My Library</h2>
+        <button id="backToFeed2" class="link-btn">← Back to Feed</button>
+      </header>
+      <div id="userMoviesGrid" class="grid">
+        <!-- User-rated movies populate here -->
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // basic home redirect for now
+    document.addEventListener("DOMContentLoaded", () => {
+      const logo = document.getElementById("homeLogo");
+      const feedView = document.getElementById("feedView");
+      const moviePage = document.getElementById("moviePage");
+      const profileView = document.getElementById("profileView");
+      logo.addEventListener("click", e => {
+        e.preventDefault();
+        moviePage.classList.add("hidden");
+        profileView.classList.add("hidden");
+        feedView.classList.remove("hidden");
+      });
+    });
+  </script>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
