@@ -2,6 +2,9 @@ require('express');
 require('mongodb');
 const bcrypt = require('bcryptjs');
 const { ObjectId } = require('mongodb');
+const sendEmail = require('./sendEmail');
+const crypto = require('crypto');
+const { stripTypeScriptTypes } = require('module');
 require('dotenv').config({ path: '../.env' });
 
 exports.setApp = function (app, client) {
@@ -24,6 +27,21 @@ exports.setApp = function (app, client) {
       const result = await db.collection('users').insertOne(
         { firstName, lastName, username, email, phone, password: hash, dateCreated: new Date() });
 
+      const token = crypto.randomBytes(32).toString('hex');
+      const expires = new Date(Date.now() + 1000 * 60 * 30);
+
+      await db.collection('users').updateOne({ _id: result.insertedId }, { $set: { verificationToken: token, verificationExpires: expires, isVerified: false } });
+
+      const verificationURL = `${process.env.APP_URL}/api/verifyEmail?token=${token}&id=${result.insertedId}`;
+
+      await sendEmail(
+        email,
+        'Verify your MoviePals Account',
+        `<p>Welcome, ${firstName}!</p>
+        <p>Click below to verify your email:</p>
+        <a href="${verificationURL}">${verificationURL}</a>
+        <p>This link will expire in 30 minutes.</p>`
+      );
 
       //Return statement
       res.status(201).json({
@@ -33,7 +51,7 @@ exports.setApp = function (app, client) {
         username,
         email,
         phone,
-        message: 'Successful registration'
+        message: 'Successful registration - please verify your email so you can log in'
       });
     } catch (e) {
       console.error(e);
@@ -51,6 +69,11 @@ exports.setApp = function (app, client) {
       //Not a valid user
       if (!user) {
         return res.status(401).json({ error: 'Invalid username/email or password' });
+      }
+
+      //Ensure user is verified
+      if (!user.isVerified) {
+        return res.status(403).json({ error: 'Please verify your email before logging in.' });
       }
 
       //Ensure valid password validation
@@ -350,5 +373,107 @@ exports.setApp = function (app, client) {
       console.error(e);
       res.status(500).json({ error: 'Error fetching friends list' });
     }
+  });
+
+  app.get('/api/verifyEmail', async (req, res, next) => {
+    const { token, id } = req.query;
+    const db = client.db('Movie_App');
+
+    try {
+      const user = await db.collection('users').findOne({ _id: new ObjectId(id), verificationToken: token, verificationExpires: { $gt: new Date() } });
+
+      if (!user) {
+        return res.status(400).json({ error: 'Invalid or expired verification link.' });
+      }
+
+      await db.collection('users').updateOne({ _id: new ObjectId(id) }, {
+        $set: { isVerified: true },
+        $unset: { verificationToken: "", verificationExpires: "" }
+      });
+
+      res.status(200).json({ message: 'Email successfully verified!' });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Error verifying email.' });
+    }
+  });
+
+  app.post('/api/resendVerification', async (req, res, next) => {
+    const { email } = req.body;
+    const db = client.db('Movie_App');
+
+    const user = await db.collection('users').findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'User already verified' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 1000 * 60 * 30);
+
+    await db.collection('users').updateOne({ _id: user._id },
+      { $set: { verificationToken: token, verificationExpires: expires } });
+
+    const verificationURL = `${process.env.APP_URL}/api/verifyEmail?token=${token}&id=${user._id}`;
+    await sendEmail(
+      user.email,
+      'Verify your MoviePals Account',
+      `<p>Hello ${user.firstName}, </p>
+      <p>Click below to verify your email:</p>
+      <a href="${verificationURL}">${verificationURL}</a>`
+    );
+
+    res.status(200).json({ message: 'Verification email resent.' });
+  });
+
+  app.post('/api/requestPasswordReset', async (req, res, next) => {
+    const { email } = req.body;
+    const db = client.db('Movie_App');
+
+    const user = await db.collection('users').findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: 'No account found with that email.' });
+    }
+
+    const token = require('crypto').randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 1000 * 60 * 30);
+
+    await db.collection('users').updateOne({ _id: user._id },
+      { $set: { resetToken: token, resetExpires: expires } }
+    );
+
+    const resetURL = `${process.env.APP_URL}/api/resetPassword?token=${token}&id=${user._id}`;
+
+    await sendEmail(
+      email,
+      'Reset your MoviePals password',
+      `<p>Click below to reset your password:</p>
+      <a href = "${resetURL}">${resetURL}</a>
+      <p>This link will expire in 30 minutes.</p>`
+    );
+
+    res.status(200).json({ message: 'Password reset email sent.' });
+  });
+
+  app.post('/api/resetPassword', async (req, res, next) => {
+    const { id, token, newPassword } = req.body;
+    const db = client.db('Movie_App');
+
+    const user = await db.collection('users').findOne({ _id: new ObjectId(id), resetToken: token, resetExpires: { $gt: new Date() } });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset token.' });
+    }
+
+    const bcryptsalt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(newPassword, bcryptsalt);
+
+    await db.collection('users').updateOne({ _id: new ObjectId(id) },
+      { $set: { password: hash }, $unset: { resetToken: "", resetExpires: "" } });
+    res.status(200).json({ message: 'Password successfully reset' });
   });
 }
