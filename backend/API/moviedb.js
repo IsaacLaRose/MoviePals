@@ -15,5 +15,3 @@ export async function searchMovie(query) {
     poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null //Want to give image too
   }));
 }
-
-
