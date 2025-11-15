@@ -3,7 +3,11 @@ import axios from 'axios';
 
 
 // Backend URL (change URL later)
-const API_URL = 'http://localhost:5000';
+const API_URL =
+  import.meta.env.PROD
+    ? 'https://moviepals.xyz'
+    : 'http://localhost:5000';
+
 
 
 
