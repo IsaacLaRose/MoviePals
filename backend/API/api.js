@@ -4,7 +4,6 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = require('mongodb');
 const sendEmail = require('./sendEmail');
 const crypto = require('crypto');
-const { stripTypeScriptTypes } = require('module');
 require('dotenv').config({ path: '../.env' });
 
 exports.setApp = function (app, client) {
@@ -95,41 +94,48 @@ exports.setApp = function (app, client) {
       });
     } catch (e) {
       console.error(e);
-      error = 'Error during login';
-      res.status(500).json({ error });
+      return res.status(500).json({error: 'Error during login'});
     }
   });;
 
   app.post('/api/addupdateRating', async (req, res, next) => {
-    const { userId, title, year, rating, comment, dateViewed } = req.body;
+    const { userId, tmdbId, title, year, poster, overview, rating, comment, dateViewed } = req.body;
     const db = client.db('Movie_App');
 
-    //Ensure proper userId, title and year
-    if (!userId || !title || !year) {
-      return res.status(400).json({ error: 'Missing required fields (userId, title, year)' });
+    //Ensure proper userId, tmdbId
+    if (!userId || !tmdbId) {
+      return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
     }
 
     try {
-      const existing = await db.collection('moviesSeen').findOne({ userId, title });
+      const existing = await db.collection('moviesSeen').findOne({ userId, tmdbId });
 
       //if rating already exists, update it
       if (existing) {
+        if (!rating || !comment || !dateViewed) {
+          return res.status(400).json({error: 'Missing required fields (rating, comment, dateViewed)'});
+        }
         await db.collection('moviesSeen').updateOne(
-          { userId, title },
-          { $set: { year, rating, comment, dateViewed, dateUpdated: new Date() } }
+          { userId, tmdbId },
+          { $set: { rating, comment, dateViewed, dateUpdated: new Date() } }
         );
 
         //Return updated rating
         res.status(200).json({
           message: 'Rating updated successfully',
-          rating: { title, year, rating, comment, dateViewed }
         });
       } else {
+        if(!title || !year || !poster || !overview){
+          return res.status(400).json({error: 'Missing required TMDB movie fields (title, year, poster, overview)'});
+        }
         //If rating doesn't already exist, add it
         await db.collection('moviesSeen').insertOne({
           userId,
+          tmdbId,
           title,
           year,
+          poster,
+          overview,
           rating,
           comment,
           dateViewed,
@@ -139,7 +145,6 @@ exports.setApp = function (app, client) {
         //return rating created
         res.status(201).json({
           message: 'Rating created successfully',
-          rating: { title, year, rating, comment, dateViewed }
         });
       }
     } catch (e) {
@@ -169,16 +174,21 @@ exports.setApp = function (app, client) {
   });
 
   app.post('/api/deleteMovieSeen', async (req, res, next) => {
-    const { userId, title } = req.body;
+    const { userId, tmdbId } = req.body;
     const db = client.db('Movie_App');
+
+    if (!userId || !tmdbId) {
+      return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
+    }
 
     try {
       //Find rating and delete it
-      const result = await db.collection('moviesSeen').deleteOne({ userId, title });
+      const result = await db.collection('moviesSeen').deleteOne({ userId, tmdbId });
       //Ensure that the rating was found
       if (result.deletedCount == 0) {
         return res.status(404).json({ error: 'Movie not found' });
       }
+
       res.status(200).json({ message: 'Successfully deleted rating.' });
     } catch (e) {
       //Error deleting rating
@@ -188,21 +198,32 @@ exports.setApp = function (app, client) {
   });
 
   app.post('/api/addToWatchlist', async (req, res, next) => {
-    const { userId, title, year } = req.body;
+    const { userId, tmdbId, title, year, poster, overview } = req.body;
     const db = client.db('Movie_App');
 
+    if (!userId || !tmdbId) {
+      return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
+    }
+
     try {
-      const existing = await db.collection('watchlist').findOne({ userId, year });
+      const existing = await db.collection('watchlist').findOne({ userId, tmdbId });
       if (existing) {
         return res.status(400).json({ error: 'Already in watchlist' });
       }
 
+      if(!title || !year || !poster || !overview){
+        return res.status(400).json({ error: "Missing TMDB movie fields (title, year, poster, overview)"});
+      }
       await db.collection('watchlist').insertOne({
         userId,
+        tmdbId,
         title,
         year,
+        poster,
+        overview,
         dateAdded: new Date()
       });
+
       res.status(201).json({ message: 'Successfully added to watchlist' });
     } catch (e) {
       console.error(e);
@@ -214,6 +235,10 @@ exports.setApp = function (app, client) {
     const { userId } = req.body;
     const db = client.db('Movie_App');
 
+    if (!userId) {
+      return res.status(400).json({ error: 'Invalid userId' });
+    }
+
     try {
       const movies = await db.collection('watchlist').find({ userId }).toArray();
       res.status(200).json({ watchlist: movies });
@@ -224,14 +249,15 @@ exports.setApp = function (app, client) {
   });
 
   app.post('/api/deleteFromWatchlist', async (req, res, next) => {
-    const { userId, title } = req.body;
+    const { userId, tmdbId } = req.body;
     const db = client.db('Movie_App');
 
     try {
-      const result = await db.collection('watchlist').deleteOne({ userId, title });
+      const result = await db.collection('watchlist').deleteOne({ userId, tmdbId });
       if (result.deletedCount == 0) {
         return res.status(400).json({ error: 'Movie not found in watchlist' });
       }
+
       res.status(200).json({ message: 'Movie successfully deleted from watchlist' });
     } catch (e) {
       console.error(e);
@@ -240,14 +266,15 @@ exports.setApp = function (app, client) {
   });
 
   app.post('/api/moveToMoviesSeen', async (req, res, next) => {
-    const { userId, title, comment, rating, dateViewed } = req.body;
+    const { userId, tmdbId, comment, rating, dateViewed } = req.body;
     const db = client.db('Movie_App');
 
-    if (!userId || !title) {
-      return res.status(400).json({ error: 'Missing required fields (userId and title)' });
+    if (!userId || !tmdbId) {
+      return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
     }
     try {
-      const movie = await db.collection('watchlist').findOne({ userId, title });
+      const movie = await db.collection('watchlist').findOne({ userId, tmdbId });
+
       if (!movie) {
         return res.status(404).json({ error: 'Movie not found in watchlist' });
       }
@@ -258,26 +285,23 @@ exports.setApp = function (app, client) {
 
       await db.collection('moviesSeen').insertOne({
         userId,
+        tmdbId,
         title: movie.title,
         year: movie.year,
+        poster: movie.poster,
+        overview: movie.overview,
         rating,
         comment,
-        dateViewed: dateViewed || new Date().toDateString,
+        dateViewed,
         dateCreated: new Date()
       })
 
-      await db.collection('watchlist').deleteOne({ userId, title });
+      await db.collection('watchlist').deleteOne({ userId, tmdbId });
 
       res.status(200).json({
         message: 'Movie successfully moved to moviesSeen',
-        movie: {
-          title: movie.title,
-          year: movie.year,
-          rating,
-          comment,
-          dateViewed
-        }
-      })
+        movie
+      });
     } catch (e) {
       console.error(e);
       return res.status(500).json({ error: 'Error moving movie to seen' });
@@ -302,6 +326,9 @@ exports.setApp = function (app, client) {
       //Ensure we are adding both ways for friends
       const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
       const friendUser = await db.collection('users').findOne({ _id: new ObjectId(friendsId) });
+      if (!user  || !friendUser) {
+        return res.status(404).json({error: 'One or both users not found'});
+      }
       await db.collection('friends').insertMany([
         {
           userId,
@@ -342,7 +369,7 @@ exports.setApp = function (app, client) {
       res.status(200).json({ message: 'Successfully removed friend.' });
     } catch (e) {
       console.error(e);
-      res.status(500).json({ error: 'Error deleting rating' });
+      res.status(500).json({ error: 'Error deleting friend' });
     }
   });
 
@@ -475,5 +502,74 @@ exports.setApp = function (app, client) {
     await db.collection('users').updateOne({ _id: new ObjectId(id) },
       { $set: { password: hash }, $unset: { resetToken: "", resetExpires: "" } });
     res.status(200).json({ message: 'Password successfully reset' });
+  });
+
+  app.post('/api/getFriendRatingsForMovie', async (req, res, next) => {
+    const { userId, tmdbId } = req.body;
+    const db = client.db('Movie_App');
+
+    if (!userId || !tmdbId) {
+      return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
+    }
+
+    try {
+      const friendLink = await db.collection('friends').find({ userId }).project({ friendsId: 1 }).toArray();
+
+      const friendIds = friendLink.map(f => f.friendsId.toString());
+
+      if (friendIds.length == 0) {
+        return res.status(200).json({ friendRatings: [] });
+      }
+
+      const friendRatings = await db.collection('moviesSeen')
+        .find({
+          userId: { $in: friendIds },
+          tmdbId
+        })
+        .project({
+          _id: 0,
+          userId: 1,
+          tmdbId: 1,
+          title: 1,
+          poster: 1,
+          rating: 1,
+          comment: 1,
+          dateViewed: 1
+        })
+        .toArray();
+
+      if (friendRatings.length === 0) {
+        return res.status(200).json({ friendRatings: [] });
+      }
+
+      const friendUsers = await db.collection('users')
+        .find({ _id: { $in: friendIds.map(id => new ObjectId(id)) } })
+        .project({
+          firstName: 1,
+          lastName: 1,
+          username: 1
+        })
+        .toArray();
+
+      const friendUserInfo = friendUsers.map(u => ({
+        ...u,
+        _id: u._id.toString()
+      }));
+
+      const ratingsWithUserInfo = friendRatings.map(rating => {
+        const user = friendUserInfo.find(u => u._id === rating.userId);
+        return {
+          ...rating,
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          username: user?.username
+        };
+      });
+
+      return res.status(200).json({ friendRatings: ratingsWithUserInfo });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Error fetching friend ratings' });
+    }
   });
 }
