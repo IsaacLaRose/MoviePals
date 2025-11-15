@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = require('mongodb');
 const sendEmail = require('./sendEmail');
 const crypto = require('crypto');
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 
 exports.setApp = function (app, client) {
   const db = client.db('Movie_App');
