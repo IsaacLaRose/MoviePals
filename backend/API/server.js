@@ -1,10 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://moviepals.xyz',
+    'https://www.moviepals.xyz',
+    'http://moviepals.xyz',
+    'http://www.moviepals.xyz',
+    'http://134.199.203.34',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 //simple api ping test
