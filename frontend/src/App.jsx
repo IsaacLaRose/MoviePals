@@ -4,7 +4,7 @@ import Home from './components/Home/Home';
 import Register from './components/Auth/Register';
 import Login from './components/Auth/Login';
 import MovieSearch from './components/Movies/MovieSearch';
-// Import other components as needed
+
 import './App.css';
 
 
