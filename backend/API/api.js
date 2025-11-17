@@ -5,6 +5,7 @@ const { ObjectId } = require('mongodb');
 const sendEmail = require('./sendEmail');
 const crypto = require('crypto');
 require('dotenv').config();
+const { searchMovie } = require('./moviedb.js');
 
 exports.setApp = function (app, client) {
   const db = client.db('Movie_App');
@@ -577,4 +578,21 @@ exports.setApp = function (app, client) {
       res.status(500).json({ error: 'Error fetching friend ratings' });
     }
   });
+
+  app.get('/api/movies/search', async (req, res, next) => {
+    try{ 
+      const query = req.query.query;
+
+      if (!query) {
+        return res.status(400).json({ error: 'Missing search query.'});
+      }
+
+      const results = await searchMovie(query);
+
+      res.status(200).json({ results });
+    } catch(e) {
+      console.error('TMDB Search Error:', e);
+      res.status(500).json({ error: 'Failed to fetch movies from TMDB.'});
+    }
+  })
 }
