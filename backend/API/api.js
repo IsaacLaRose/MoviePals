@@ -58,13 +58,18 @@ exports.setApp = function (app, client) {
       res.status(500).json({ error: 'Error during registration' });
     }
   });
+
   app.post('/api/login', async (req, res, next) => {
-    const { login, password } = req.body;
+    const { email, username, login, password } = req.body;
     const db = client.db('Movie_App');
 
     try {
       //Try to find user login
-      const user = await db.collection('users').findOne({ $or: [{ username: login }, { email: login }] });
+      const identifier = login || email || username;
+      if (!identifier || !password) {
+        return res.status(400).json({ error: 'Missing login or password.' });
+      }
+      const user = await db.collection('users').findOne({ $or: [{ username: identifier }, { email: identifier }] });
       //Not a valid user
       if (!user) {
         return res.status(401).json({ error: 'Invalid username/email or password' });
@@ -94,7 +99,7 @@ exports.setApp = function (app, client) {
       });
     } catch (e) {
       console.error(e);
-      return res.status(500).json({error: 'Error during login'});
+      return res.status(500).json({ error: 'Error during login' });
     }
   });;
 
@@ -113,7 +118,7 @@ exports.setApp = function (app, client) {
       //if rating already exists, update it
       if (existing) {
         if (!rating || !comment || !dateViewed) {
-          return res.status(400).json({error: 'Missing required fields (rating, comment, dateViewed)'});
+          return res.status(400).json({ error: 'Missing required fields (rating, comment, dateViewed)' });
         }
         await db.collection('moviesSeen').updateOne(
           { userId, tmdbId },
@@ -125,8 +130,8 @@ exports.setApp = function (app, client) {
           message: 'Rating updated successfully',
         });
       } else {
-        if(!title || !year || !poster || !overview){
-          return res.status(400).json({error: 'Missing required TMDB movie fields (title, year, poster, overview)'});
+        if (!title || !year || !poster || !overview) {
+          return res.status(400).json({ error: 'Missing required TMDB movie fields (title, year, poster, overview)' });
         }
         //If rating doesn't already exist, add it
         await db.collection('moviesSeen').insertOne({
@@ -211,8 +216,8 @@ exports.setApp = function (app, client) {
         return res.status(400).json({ error: 'Already in watchlist' });
       }
 
-      if(!title || !year || !poster || !overview){
-        return res.status(400).json({ error: "Missing TMDB movie fields (title, year, poster, overview)"});
+      if (!title || !year || !poster || !overview) {
+        return res.status(400).json({ error: "Missing TMDB movie fields (title, year, poster, overview)" });
       }
       await db.collection('watchlist').insertOne({
         userId,
@@ -326,8 +331,8 @@ exports.setApp = function (app, client) {
       //Ensure we are adding both ways for friends
       const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
       const friendUser = await db.collection('users').findOne({ _id: new ObjectId(friendsId) });
-      if (!user  || !friendUser) {
-        return res.status(404).json({error: 'One or both users not found'});
+      if (!user || !friendUser) {
+        return res.status(404).json({ error: 'One or both users not found' });
       }
       await db.collection('friends').insertMany([
         {
