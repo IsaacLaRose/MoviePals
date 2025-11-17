@@ -31,12 +31,12 @@ function MovieSearch() {
 
     try {
       // This will call your backend API
-      const results = await searchMovies(searchTerm);
-      setMovies(results);
+      const data= await searchMovies(searchTerm);
+      setMovies(data.results);
     
       
 
-      if (results.length === 0) {
+      if (data.results.length === 0) {
         setError('No movies found. Try a different search.');
       }
     } catch (err) {
@@ -75,15 +75,15 @@ function MovieSearch() {
       {/* Movie Results */}
       <div className="movie-results">
         {movies.map((movie) => (
-          <div key={movie.imdbID} className="movie-card">
+          <div key={movie.id} className="movie-card">
             <img 
-              src={movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450?text=No+Poster'} 
-              alt={movie.Title}
+              src={movie.poster  ? movie.poster : 'https://via.placeholder.com/300x450?text=No+Poster'} 
+              alt={movie.title}
               className="movie-poster"
             />
             <div className="movie-info">
-              <h3 className="movie-title">{movie.Title}</h3>
-              <p className="movie-year">{movie.Year}</p>
+              <h3 className="movie-title">{movie.title}</h3>
+              <p className="movie-year">{movie.release_date?.slice(0,4)}</p>
               <button className="rate-button">Rate This Movie</button>
             </div>
           </div>
