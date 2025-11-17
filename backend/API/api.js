@@ -61,16 +61,15 @@ exports.setApp = function (app, client) {
   });
 
   app.post('/api/login', async (req, res, next) => {
-    const { email, username, login, password } = req.body;
+    const { login, password } = req.body;
     const db = client.db('Movie_App');
 
     try {
       //Try to find user login
-      const identifier = login || email || username;
-      if (!identifier || !password) {
+      if (!login || !password) {
         return res.status(400).json({ error: 'Missing login or password.' });
       }
-      const user = await db.collection('users').findOne({ $or: [{ username: identifier }, { email: identifier }] });
+      const user = await db.collection('users').findOne({ $or: [{ username: login }, { email: login }] });
       //Not a valid user
       if (!user) {
         return res.status(401).json({ error: 'Invalid username/email or password' });
