@@ -8,7 +8,7 @@ import './Auth.css';
 function Login() {
 
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,10 +23,10 @@ function Login() {
 
 
     try {
-      await authService.login({ email, password });
+      await authService.login({ login, password });
       navigate('/search');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      setError(err.response?.data?.message || 'Invalid email/username or password');
     } finally {
       setLoading(false);
     }
@@ -48,12 +48,12 @@ function Login() {
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="your.email@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              id="login"
+              name="login"
+              placeholder="Email or Username"
+              value={login}
+              onChange={(e) => setLogin(e.target.value)}
               required
             />
           </div>
