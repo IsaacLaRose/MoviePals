@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MoviePals</string>
+    <string name="title_activity_main">MoviePals</string>
+    <string name="package_name">xyz.cop.moviepals</string>
+    <string name="custom_url_scheme">xyz.cop.moviepals</string>
+</resources>
