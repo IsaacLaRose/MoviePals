@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { searchMovies } from '../../services/movieService';
 import './Movies.css';
-
-
 
 function MovieSearch() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,31 +8,28 @@ function MovieSearch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-  
-    
-
+  // Debounce timer reference
+  useEffect(() => {
     if (!searchTerm.trim()) {
-      setError('Please enter a movie name');
+      setMovies([]);
+      setError('');
       return;
     }
 
+    const delay = setTimeout(() => {
+      autoSearch();
+    }, 400); // wait 400ms after typing
 
+    return () => clearTimeout(delay);
+  }, [searchTerm]);
 
-    setLoading(true);
-    setError('');
-
-
-
+  const autoSearch = async () => {
     try {
-      // This will call your backend API
-      const data= await searchMovies(searchTerm);
+      setLoading(true);
+      setError('');
+
+      const data = await searchMovies(searchTerm);
       setMovies(data.results);
-    
-      
 
       if (data.results.length === 0) {
         setError('No movies found. Try a different search.');
@@ -47,14 +42,18 @@ function MovieSearch() {
     }
   };
 
-
+  // Keep button search working if user presses enter
+  const handleSearch = (e) => {
+    e.preventDefault();
+    autoSearch();
+  };
 
   return (
-
     <div className="movie-search-container">
       {/* Search Bar */}
       <div className="search-section">
         <h1>Search Movies</h1>
+
         <form onSubmit={handleSearch} className="search-form">
           <input
             type="text"
@@ -67,30 +66,27 @@ function MovieSearch() {
             {loading ? 'Searching...' : 'Search'}
           </button>
         </form>
+
         {error && <p className="error-message">{error}</p>}
       </div>
-
-
 
       {/* Movie Results */}
       <div className="movie-results">
         {movies.map((movie) => (
           <div key={movie.id} className="movie-card">
-            <img 
-              src={movie.poster  ? movie.poster : 'https://via.placeholder.com/300x450?text=No+Poster'} 
+            <img
+              src={movie.poster ? movie.poster : 'https://via.placeholder.com/300x450?text=No+Poster'}
               alt={movie.title}
               className="movie-poster"
             />
             <div className="movie-info">
               <h3 className="movie-title">{movie.title}</h3>
-              <p className="movie-year">{movie.release_date?.slice(0,4)}</p>
+              <p className="movie-year">{movie.release_date?.slice(0, 4)}</p>
               <button className="rate-button">Rate This Movie</button>
             </div>
           </div>
         ))}
       </div>
-
-
 
       {movies.length === 0 && !loading && !error && (
         <div className="empty-state">
@@ -101,6 +97,5 @@ function MovieSearch() {
   );
 }
 
-
-
 export default MovieSearch;
+
