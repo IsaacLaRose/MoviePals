@@ -7,8 +7,10 @@ const crypto = require('crypto');
 require('dotenv').config();
 const { searchMovie } = require('./moviedb.js');
 
-exports.setApp = function (app, client) {
-  const db = client.db('Movie_App');
+exports.setApp = function (app, client, dbName = 'Movie_App') {
+  const db = client.db(dbName); // now uses passed dbName or defaults to production
+
+  //const db = client.db('Movie_App');
   app.post('/api/register', async (req, res, next) => {
     const { firstName, lastName, username, email, phone, password } = req.body;
 
@@ -62,7 +64,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/login', async (req, res, next) => {
     const { login, password } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     try {
       //Try to find user login
@@ -105,7 +108,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/addupdateRating', async (req, res, next) => {
     const { userId, tmdbId, title, year, poster, overview, rating, comment, dateViewed } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     //Ensure proper userId, tmdbId
     if (!userId || !tmdbId) {
@@ -160,7 +164,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/getMoviesSeen', async (req, res, next) => {
     const { userId } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     //Ensure proper userId
     if (!userId) {
@@ -180,7 +185,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/deleteMovieSeen', async (req, res, next) => {
     const { userId, tmdbId } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     if (!userId || !tmdbId) {
       return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
@@ -204,7 +210,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/addToWatchlist', async (req, res, next) => {
     const { userId, tmdbId, title, year, poster, overview } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     if (!userId || !tmdbId) {
       return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
@@ -238,7 +245,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/findUserWatchlist', async (req, res, next) => {
     const { userId } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     if (!userId) {
       return res.status(400).json({ error: 'Invalid userId' });
@@ -255,7 +263,9 @@ exports.setApp = function (app, client) {
 
   app.post('/api/deleteFromWatchlist', async (req, res, next) => {
     const { userId, tmdbId } = req.body;
-    const db = client.db('Movie_App');
+    
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     try {
       const result = await db.collection('watchlist').deleteOne({ userId, tmdbId });
@@ -272,7 +282,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/moveToMoviesSeen', async (req, res, next) => {
     const { userId, tmdbId, comment, rating, dateViewed } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     if (!userId || !tmdbId) {
       return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
@@ -315,7 +326,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/addFriend', async (req, res, next) => {
     const { userId, friendsId } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     if (!userId || !friendsId) {
       return res.status(400).json({ error: 'Missing required fields (userId, friendsId)' });
@@ -362,7 +374,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/removeFriend', async (req, res, next) => {
     const { userId, friendsId } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     try {
       //Ensure we delete both ways when deleting
@@ -409,7 +422,8 @@ exports.setApp = function (app, client) {
 
   app.get('/api/verifyEmail', async (req, res, next) => {
     const { token, id } = req.query;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     try {
       const user = await db.collection('users').findOne({ _id: new ObjectId(id), verificationToken: token, verificationExpires: { $gt: new Date() } });
@@ -432,7 +446,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/resendVerification', async (req, res, next) => {
     const { email } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     const user = await db.collection('users').findOne({ email });
     if (!user) {
@@ -463,7 +478,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/requestPasswordReset', async (req, res, next) => {
     const { email } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     const user = await db.collection('users').findOne({ email });
 
@@ -493,7 +509,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/resetPassword', async (req, res, next) => {
     const { id, token, newPassword } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     const user = await db.collection('users').findOne({ _id: new ObjectId(id), resetToken: token, resetExpires: { $gt: new Date() } });
 
@@ -511,7 +528,8 @@ exports.setApp = function (app, client) {
 
   app.post('/api/getFriendRatingsForMovie', async (req, res, next) => {
     const { userId, tmdbId } = req.body;
-    const db = client.db('Movie_App');
+    const db = client.db(dbName);
+    //const db = client.db('Movie_App');
 
     if (!userId || !tmdbId) {
       return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
