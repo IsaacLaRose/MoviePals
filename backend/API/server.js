@@ -10,6 +10,7 @@ app.use(cors({
     'https://www.moviepals.xyz',
     'http://moviepals.xyz',
     'http://www.moviepals.xyz',
+    'https://app.swaggerhub.com',
     'http://134.199.203.34',
     'http://localhost:5173',
     'http://localhost:3000'
