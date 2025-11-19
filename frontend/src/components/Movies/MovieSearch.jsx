@@ -92,47 +92,25 @@ function MovieSearch() {
             <button className="action-btn" onClick={() => (window.location.href = "/favorites")}>
               ❤️ Favorites
             </button>
-
-            <button className="action-btn" onClick={() => (window.location.href = "/watchlist")}>
-              📃 Watchlist
-            </button>
           </div>
         </div>
 
         {/* 6-box grid */}
         <div className="dashboard-grid">
           <div className="dashboard-box" onClick={() => (window.location.href = "/ratings")}>
-            <h2>34</h2>
+            <h2>16</h2>
             <p>Movies Rated</p>
           </div>
 
           <div className="dashboard-box" onClick={() => (window.location.href = "/favorites")}>
-            <h2>12</h2>
+            <h2>9</h2>
             <p>Favorites</p>
-          </div>
-
-          <div className="dashboard-box" onClick={() => (window.location.href = "/watchlist")}>
-            <h2>7</h2>
-            <p>Watchlist</p>
-          </div>
-
-          <div className="dashboard-box" onClick={() => (window.location.href = "/ratings")}>
-            <h3>🎬 Recently Rated</h3>
-            <p>Your last rated movies will appear here.</p>
           </div>
 
           <div className="dashboard-box" onClick={() => (window.location.href = "/trending")}>
             <h3>🔥 Trending Picks</h3>
             <p>Popular movies recommended for you.</p>
           </div>
-
-          <div
-  className="dashboard-box"
-  onClick={() => (window.location.href = "/top-picks")}
->
-  <h3>🎯 Your Top Picks</h3>
-  <p>Hand-picked recommendations just for you.</p>
-</div>
         </div>
 
         {/* SEARCH BAR */}
@@ -198,4 +176,3 @@ function MovieSearch() {
 }
 
 export default MovieSearch;
-
