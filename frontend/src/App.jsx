@@ -9,10 +9,8 @@ import MovieSearch from "./components/Movies/MovieSearch";
 import Profile from "./components/Profile/Profile";
 import Ratings from "./components/Ratings/Ratings";
 import Favorites from "./components/Favorites/Favorites";
-import Watchlist from "./components/Watchlist/Watchlist";
 import Friends from "./components/Friends/Friends";
 import Followers from "./components/Followers/Followers";
-import UserProfile from "./components/Profile/UserProfile";
 import MovieDetails from "./components/MovieDetails/MovieDetails";
 import Trending from "./components/Trending/Trending";
 
@@ -25,9 +23,8 @@ import Trending from "./components/Trending/Trending";
 import "./App.css";
 
 function App() {
-const [isLoggedIn, setIsLoggedIn] = useState(() => {
-  return localStorage.getItem("loggedIn") === "true";
-});
+const [isLoggedIn, setIsLoggedIn] = useState(true);
+
 
 
   const handleLogin = () => {
@@ -67,10 +64,6 @@ const [isLoggedIn, setIsLoggedIn] = useState(() => {
   element={isLoggedIn ? <Favorites /> : <Navigate to="/login" replace />}
 />
 
-          <Route
-  path="/watchlist"
-  element={isLoggedIn ? <Watchlist /> : <Navigate to="/login" replace />}
-/>
 
 
            
