@@ -104,7 +104,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
       console.error(e);
       return res.status(500).json({ error: 'Error during login' });
     }
-  });;
+  });
 
   app.post('/api/addupdateRating', async (req, res, next) => {
     const { userId, tmdbId, title, year, poster, overview, rating, comment, dateViewed } = req.body;
@@ -613,3 +613,4 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
     }
   })
 }
+
