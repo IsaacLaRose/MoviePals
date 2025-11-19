@@ -1,0 +1,292 @@
+/* =========================================================
+   MAIN PROFILE PAGE BACKGROUND + GLOBAL LAYOUT
+   ========================================================= */
+.profile-page {
+  padding: 2rem;
+  color: white;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a0505 50%, #0a0a0a 100%);
+}
+
+
+/* =========================================================
+   INSTAGRAM-STYLE TOP HEADER
+   ========================================================= */
+.profile-header-instagram {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  margin-bottom: 2.5rem;
+  padding: 1rem 2rem;
+}
+
+
+/* =====================
+   PROFILE AVATAR
+   ===================== */
+.profile-avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 4px solid rgba(185, 28, 28, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Default silhouette */
+.profile-avatar::before {
+  content: "";
+  display: block;
+  width: 70%;
+  height: 70%;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23aaaaaa" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.8 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.2 5 5 5zm0 2c-3.5 0-10 1.8-10 5v3h20v-3c0-3.2-6.5-5-10-5z"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
+/* =========================================================
+   USER INFO (username, button, stats, bio)
+   ========================================================= */
+.profile-user-info {
+  flex: 1;
+}
+
+.profile-username {
+  font-size: 2.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+
+/* Friend Button */
+.profile-addfriend-btn {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  border: none;
+  color: white;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.profile-addfriend-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(185, 28, 28, 0.4);
+}
+
+
+/* =========================================================
+   BOXED STATS (RATED | FRIENDS | FOLLOWERS)
+   ========================================================= */
+.profile-stats-row {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.profile-stat-item {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(185, 28, 28, 0.3);
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+  transition: 0.3s ease;
+  cursor: pointer;   
+}
+
+.profile-stat-item:hover {
+  border-color: rgba(185, 28, 28, 0.6);
+  transform: translateY(-3px);
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #b91c1c;
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+
+/* =====================
+   Bio
+   ===================== */
+.profile-bio {
+  max-width: 450px;
+  font-size: 1rem;
+  opacity: 0.85;
+}
+
+/* BIO BOX STYLE */
+.profile-bio-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(185, 28, 28, 0.25);
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  max-width: 420px;
+  text-align: center;
+  font-size: 1rem;
+  margin-top: 1rem;
+  line-height: 1.5;
+  backdrop-filter: blur(5px); /* glass effect */
+}
+
+
+/* =========================================================
+   SECTION TITLES
+   ========================================================= */
+.section-title,
+.profile-section-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  margin-top: 3rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+
+/* ============================
+   RATED MOVIES GRID — FIXED
+============================ */
+.profile-movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Movie card */
+.profile-movie-grid-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(185, 28, 28, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: 0.3s ease;
+}
+
+.profile-movie-grid-item:hover {
+  transform: translateY(-4px);
+  border-color: rgba(185, 28, 28, 0.5);
+}
+
+/* Poster styling — smaller & consistent */
+.profile-movie-grid-item img {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+}
+
+
+
+/* =========================================================
+   RESPONSIVE — FOR SMALL SCREENS
+   ========================================================= */
+@media (max-width: 750px) {
+  .profile-header-instagram {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-stats-row {
+    flex-direction: column;
+  }
+
+  .rated-movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.profile-action-buttons {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-follow-btn {
+  background: #b91c1c;
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.profile-follow-btn:hover {
+  background: #8a1515;
+}
+
+.profile-addfriend-btn:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
+/* ==== MOVIE CARDS WITH HOVER ==== */
+
+.profile-movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 1rem;
+}
+
+.profile-movie-card {
+  position: relative;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: 0.3s ease;
+}
+
+.profile-movie-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Hover Overlay */
+.movie-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  opacity: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  transition: opacity 0.3s ease;
+}
+
+.profile-movie-card:hover .movie-hover-overlay {
+  opacity: 1;
+}
+
+.movie-hover-title {
+  color: white;
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.1rem;
+}

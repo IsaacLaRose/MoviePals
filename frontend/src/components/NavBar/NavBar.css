@@ -1,0 +1,131 @@
+/* ============================
+   UNIVERSAL TOP NAVIGATION BAR
+   ============================ */
+.top-nav {
+  width: 100%;
+  padding: 1.2rem 2rem;
+
+  /* 🔥 MATCH YOUR GLOBAL BACKGROUND (no more gray) */
+  background: linear-gradient(
+    180deg,
+    #0a0a0a 0%,
+    #1a0505 50%,
+    #0a0a0a 100%
+  );
+  
+  border-bottom: 1px solid rgba(185, 28, 28, 0.3);
+  backdrop-filter: blur(8px);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.nav-logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+/* ============================
+   DESKTOP NAV ITEMS
+   ============================ */
+.nav-items {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 1rem;
+  align-items: center;
+}
+
+.nav-items a {
+  color: white;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  transition: 0.3s ease;
+}
+
+.nav-items a:hover {
+  background: rgba(185, 28, 28, 0.35);
+}
+
+/* ============================
+   MOBILE HAMBURGER ICON
+   ============================ */
+.nav-menu-icon {
+  display: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: white;
+}
+
+/* ============================
+   MOBILE ONLY
+   ============================ */
+@media (max-width: 900px) {
+  .nav-items {
+    display: none;
+  }
+
+  .nav-menu-icon {
+    display: block;
+  }
+}
+
+/* ============================
+   MOBILE DROPDOWN MENU
+   ============================ */
+.mobile-nav-dropdown {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+
+  /* 🔥 SAME GRADIENT FOR CONSISTENCY */
+  background: linear-gradient(
+    180deg,
+    #0a0a0a 0%,
+    #1a0505 50%,
+    #0a0a0a 100%
+  );
+
+  border: 1px solid rgba(185, 28, 28, 0.4);
+  padding: 1rem 1.2rem;
+  border-radius: 6px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 180px;
+
+  backdrop-filter: blur(10px);
+  animation: dropdownFade 0.25s ease-out;
+  z-index: 9999;
+}
+
+.mobile-nav-dropdown a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: 0.25s ease;
+}
+
+.mobile-nav-dropdown a:hover {
+  background: rgba(185, 28, 28, 0.4);
+}
+
+/* Animation */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,86 @@
+.friends-page {
+  padding: 2rem;
+  color: white;
+  background: linear-gradient(180deg, #0a0a0a, #1a0505, #0a0a0a);
+  min-height: 100vh;
+}
+
+.friends-title {
+  text-align: center;
+  font-size: 2.4rem;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+.friends-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2rem;
+  max-width: 1300px;
+  margin: auto;
+}
+
+.friend-card {
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(185,28,28,0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  transition: .3s ease;
+}
+
+.friend-card-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+
+.friend-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(185,28,28,0.6);
+}
+
+.friend-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.friend-avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  border: 2px solid rgba(185,28,28,0.6);
+}
+
+.friend-name {
+  font-size: 1.4rem;
+}
+
+.friend-movies {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: .5rem;
+}
+
+.friend-movie {
+  min-width: 120px;
+  text-align: center;
+}
+
+.friend-movie img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.friend-movie-title {
+  margin-top: .4rem;
+  font-size: .9rem;
+}
+
+.friend-movie-rating {
+  color: gold;
+  margin-top: .2rem;
+}

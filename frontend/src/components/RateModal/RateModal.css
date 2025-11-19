@@ -1,0 +1,71 @@
+.rate-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.rate-modal {
+  background: #111;
+  padding: 2rem;
+  width: 400px;
+  border-radius: 10px;
+  border: 1px solid rgba(185,28,28,0.4);
+  text-align: center;
+  color: white;
+}
+
+.star-row {
+  margin: 1rem 0;
+  font-size: 2.3rem;
+}
+
+.star {
+  cursor: pointer;
+  color: #444;
+  transition: 0.2s ease;
+}
+
+.star.filled {
+  color: gold;
+}
+
+.rate-comment {
+  width: 100%;
+  height: 80px;
+  margin-top: 1rem;
+  background: #1a1a1a;
+  color: white;
+  border: 1px solid rgba(185,28,28,0.3);
+  padding: 0.5rem;
+  border-radius: 5px;
+}
+
+.save-rating-btn {
+  width: 100%;
+  padding: 0.8rem;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+  border: none;
+  color: white;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.close-modal-btn {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.7rem;
+  background: #333;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}

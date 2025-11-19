@@ -1,0 +1,191 @@
+/* ============================
+   PAGE LAYOUT
+   ============================ */
+.ratings-page {
+  padding: 2rem;
+  color: white;
+  background: linear-gradient(180deg, #0a0a0a, #1a0505, #0a0a0a);
+  min-height: 100vh;
+}
+
+.ratings-title {
+  text-align: center;
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+/* ============================
+   GRID LAYOUT
+   ============================ */
+.ratings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 2rem;
+  max-width: 1300px;
+  margin: auto;
+}
+
+/* ============================
+   MOVIE CARD
+   ============================ */
+.ratings-card {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(185, 28, 28, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.ratings-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(185, 28, 28, 0.6);
+}
+
+.ratings-card img {
+  width: 100%;
+  height: 330px;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(185, 28, 28, 0.2);
+}
+
+.ratings-info {
+  padding: 1rem;
+  text-align: center;
+}
+
+.ratings-info h3 {
+  margin-bottom: 0.3rem;
+}
+
+/* ============================
+   STATIC GOLD STARS (Card)
+   ============================ */
+.star-row {
+  margin-top: 0.4rem;
+}
+
+.star {
+  font-size: 1.4rem;
+  color: gray;
+}
+
+.star.filled {
+  color: gold;
+}
+
+/* ============================
+   MODAL OVERLAY
+   ============================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+}
+
+/* ============================
+   MODAL WINDOW
+   ============================ */
+.modal {
+  background: #111;
+  padding: 2rem;
+  width: 360px;
+  border-radius: 10px;
+  text-align: center;
+  border: 1px solid rgba(185, 28, 28, 0.45);
+}
+
+.modal h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.6rem;
+}
+
+/* ============================
+   EDITABLE STAR SELECTOR
+   ============================ */
+.star-select .star {
+  font-size: 2.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: 0.2s ease;
+}
+
+.star-select .star:hover {
+  transform: scale(1.2);
+}
+
+/* ============================
+   MODAL BUTTONS
+   ============================ */
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.btn-save {
+  background: #b91c1c;
+  padding: 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-delete {
+  background: #7f1d1d;
+  padding: 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-cancel {
+  background: #2e2e2e;
+  padding: 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-save:hover,
+.btn-delete:hover,
+.btn-cancel:hover {
+  opacity: 0.85;
+}
+
+/* Comment under card */
+.movie-comment {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-top: 0.4rem;
+  min-height: 40px;
+}
+
+/* Comment box in modal */
+.comment-box {
+  width: 100%;
+  padding: 0.7rem;
+  background: #222;
+  color: white;
+  border: 1px solid rgba(185, 28, 28, 0.3);
+  border-radius: 6px;
+  resize: none;
+  margin-top: 1rem;
+  height: 80px;
+}
+
+.word-count {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  text-align: right;
+}
