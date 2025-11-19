@@ -13,7 +13,7 @@ function Register() {
     lastName: '',
     username: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     password: '',
     confirmPassword: ''
   });
@@ -66,7 +66,7 @@ function Register() {
         lastName: formData.lastName,
         username: formData.username,
         email: formData.email,
-        phone: formData.phone,
+        phoneNumber: formData.phoneNumber,
         password: formData.password
       });
 
@@ -80,7 +80,7 @@ function Register() {
         lastName: '',
         username: '',
         email: '',
-        phone: '',
+        phoneNumber: '',
         password: '',
         confirmPassword: ''
       });
@@ -178,12 +178,12 @@ function Register() {
 
 
           <div className="form-group">
-            <label htmlFor="phone">Phone Number</label>
+            <label htmlFor="phoneNumber">Phone Number</label>
             <input
               type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formData.phoneNumber}
               onChange={handleChange}
               required
             />

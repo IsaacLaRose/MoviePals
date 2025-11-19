@@ -7,58 +7,87 @@ const crypto = require('crypto');
 require('dotenv').config();
 const { searchMovie } = require('./moviedb.js');
 
+
+console.log('APP_URL:', process.env.APP_URL);
+console.log('EMAIL_FROM:', process.env.EMAIL_FROM);
+
+
 exports.setApp = function (app, client) {
   const db = client.db('Movie_App');
-  app.post('/api/register', async (req, res, next) => {
-    const { firstName, lastName, username, email, phone, password } = req.body;
+app.post('/api/register', async (req, res) => {
+  try {
+    const { firstName, lastName, username, email, phoneNumber, password } = req.body;
+    
+    console.log('=== REGISTRATION START ===');
+    console.log('Request body:', { firstName, lastName, username, email, phoneNumber });
 
-    try {
-      const existingUser = await db.collection('users').findOne({ $or: [{ username }, { email }] });
-      //Ensure no duplicate usernames/emails
-      if (existingUser) {
-        return res.status(400).json({ error: 'Username or email already exists.' });
-      }
-
-      //use bcrypt for password hashing
-      const bcryptsalt = await bcrypt.genSalt(10);
-      const hash = await bcrypt.hash(password, bcryptsalt);
-
-      //Insert into database
-      const result = await db.collection('users').insertOne(
-        { firstName, lastName, username, email, phone, password: hash, dateCreated: new Date() });
-
-      const token = crypto.randomBytes(32).toString('hex');
-      const expires = new Date(Date.now() + 1000 * 60 * 30);
-
-      await db.collection('users').updateOne({ _id: result.insertedId }, { $set: { verificationToken: token, verificationExpires: expires, isVerified: false } });
-
-      const verificationURL = `${process.env.APP_URL}/api/verifyEmail?token=${token}&id=${result.insertedId}`;
-
-      await sendEmail(
-        email,
-        'Verify your MoviePals Account',
-        `<p>Welcome, ${firstName}!</p>
-        <p>Click below to verify your email:</p>
-        <a href="${verificationURL}">${verificationURL}</a>
-        <p>This link will expire in 30 minutes.</p>`
-      );
-
-      //Return statement
-      res.status(201).json({
-        id: result.insertedId,
-        firstName,
-        lastName,
-        username,
-        email,
-        phone,
-        message: 'Successful registration - please verify your email so you can log in'
+    // Check if user already exists - USE NATIVE MONGODB
+    const existingUser = await db.collection('users').findOne({ 
+      $or: [{ email }, { username }] 
+    });
+    
+    if (existingUser) {
+      console.log('❌ User already exists:', existingUser.email);
+      return res.status(400).json({ 
+        message: 'User with this email or username already exists' 
       });
-    } catch (e) {
-      console.error(e);
-      error = 'Error during registration';
-      res.status(500).json({ error: 'Error during registration' });
     }
-  });
+
+    console.log('✓ User does not exist, proceeding...');
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('✓ Password hashed');
+
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
+
+    // Create user object - USE NATIVE MONGODB
+    const newUser = {
+      firstName,
+      lastName,
+      username,
+      email,
+      phoneNumber,
+      password: hashedPassword,
+      isVerified: false,
+      verificationToken,
+      verificationExpires,
+      dateCreated: new Date()
+    };
+
+    const result = await db.collection('users').insertOne(newUser);
+    console.log('✓ User saved to database:', result.insertedId);
+
+    // Send verification email
+    const verificationLink = `${process.env.APP_URL}/verify-email?token=${verificationToken}&id=${result.insertedId}`;
+    
+    console.log('Sending verification email...');
+    await sendEmail(
+      email,
+      'Verify your MoviePals account',
+      `<p>Hello ${firstName},</p>
+       <p>Click <a href="${verificationLink}">here</a> to verify your email.</p>
+       <p>This link will expire in 30 minutes.</p>`
+    );
+    
+    console.log('✓ Verification email sent to:', email);
+    console.log('=== REGISTRATION SUCCESS ===');
+
+    return res.status(201).json({ 
+      message: 'Registration successful! Please check your email to verify your account.'
+    });
+
+  } catch (error) {
+    console.error('❌ REGISTRATION ERROR:', error);
+    console.error('Error stack:', error.stack);
+    
+    return res.status(500).json({ 
+      message: error.message || 'Registration failed. Please try again.'
+    });
+  }
+});
 
   app.post('/api/login', async (req, res, next) => {
     const { login, password } = req.body;

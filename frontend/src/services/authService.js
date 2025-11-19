@@ -5,11 +5,21 @@ import api from './api';
 export const authService = {
     
   // Register new user
+  // register: async (userData) => {
+  //   const response = await api.post('/api/register', userData);
+  //   return response.data;
+  // },
+  // In your authService.js
   register: async (userData) => {
-    const response = await api.post('/api/register', userData);
-    return response.data;
+    try {
+      const response = await api.post('/api/register', userData);
+      return response.data;
+    } catch (error) {
+      // Extract the error message from the response
+      const message = error.response?.data?.message || 'Registration failed. Please try again.';
+      throw new Error(message);
+    }
   },
-
 
 
   // Login user
@@ -33,10 +43,12 @@ export const authService = {
 
 
   // Verify email
-  verifyEmail: async (token) => {
-    const response = await api.get(`/api/verify/${token}`);
+  verifyEmail: async (token, id) => {
+    const response = await api.get(`/api/verifyEmail?token=${token}&id=${id}`);
     return response.data;
   },
+
+
 
 
 
