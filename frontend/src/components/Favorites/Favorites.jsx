@@ -16,11 +16,45 @@ function Favorites() {
         "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
     },
     {
-      id: 3,
-      title: "Dune: Part Two",
-      poster:
-        "https://image.tmdb.org/t/p/w500/8b8g8xOmV5U1v7lZNVYFl1pZb6C.jpg",
+    id: 3,
+    title: "Spider-Man: No Way Home",
+    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+  },
+  {
+    id: 4,
+    title: "The Matrix",
+    poster: "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
     },
+  {
+    id: 5,
+    title: "Joker",
+    poster: "https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg",
+  },
+  {
+    id: 6,
+    title: "The Wolf of Wall Street",
+    poster: "https://image.tmdb.org/t/p/w500/pWHf4khOloNVfCxscsXFj3jj6gP.jpg",
+  },
+  {
+    id: 7,
+    title: "Oppenheimer",
+    poster: "https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg",
+    rating: 5,
+    comment: "A haunting portrait of a complicated genius."
+  },
+
+  {
+    id: 8,
+    title: "The Shawshank Redemption",
+    poster: "https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg",
+    rating: 5,
+    comment: "Widely considered the greatest film ever made."
+  },
+  {
+    id: 9,
+    title: "Shutter Island",
+    poster: "https://image.tmdb.org/t/p/w500/kve20tXwUZpu4GUX8l6X7Z4jmL6.jpg",
+  }
   ]);
 
   const removeFavorite = (id) => {
