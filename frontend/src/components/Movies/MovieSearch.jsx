@@ -26,13 +26,11 @@ function MovieSearch() {
     try {
       const data = await searchMovies(searchTerm);
 
-      // ⭐ FIX TMDB IMAGE FIELD
       const formatted = data.results.map((m) => ({
-        ...m,
-        poster: m.poster_path
-          ? `https://image.tmdb.org/t/p/w500${m.poster_path}`
-          : null,
-      }));
+  ...m,
+  poster: m.poster,   // Already formatted by backend
+}));
+
 
       setMovies(formatted);
 
@@ -105,11 +103,6 @@ function MovieSearch() {
           <div className="dashboard-box" onClick={() => (window.location.href = "/favorites")}>
             <h2>9</h2>
             <p>Favorites</p>
-          </div>
-
-          <div className="dashboard-box" onClick={() => (window.location.href = "/trending")}>
-            <h3>🔥 Trending Picks</h3>
-            <p>Popular movies recommended for you.</p>
           </div>
         </div>
 
