@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { searchMovies } from "../../services/movieService";
 import api from "../../services/api";
 import RateModal from "../RateModal/RateModal";
-import AverageRatingChart from "../Stats/AverageRatingChart";
 import "./Movies.css";
 
 function MovieSearch() {
@@ -124,29 +123,23 @@ function MovieSearch() {
         </div>
 
         {/* DASHBOARD STATS */}
-<div className="dashboard-grid stats-grid">
-  <div
-    className="dashboard-box"
-    onClick={() => (window.location.href = "/ratings")}
-  >
-    <h2>{ratedCount}</h2>
-    <p>Movies Rated</p>
-  </div>
+        <div className="dashboard-grid stats-grid">
+          <div
+            className="dashboard-box"
+            onClick={() => (window.location.href = "/ratings")}
+          >
+            <h2>{ratedCount}</h2>
+            <p>Movies Rated</p>
+          </div>
 
-  <div
-    className="dashboard-box"
-    onClick={() => (window.location.href = "/favorites")}
-  >
-    <h2>{favoriteCount}</h2>
-    <p>Favorites</p>
-  </div>
-</div>
-
-{/* ⭐ AVERAGE RATING CHART SECTION */}
-<div className="chart-container">
-  <AverageRatingChart />
-</div>
-
+          <div
+            className="dashboard-box"
+            onClick={() => (window.location.href = "/favorites")}
+          >
+            <h2>{favoriteCount}</h2>
+            <p>Favorites</p>
+          </div>
+        </div>
 
         {/* SEARCH BAR */}
         <div className="search-section">
