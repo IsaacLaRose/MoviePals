@@ -1,177 +1,71 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import api from "../../services/api";
 import "./Profile.css";
 
 function Profile() {
-  const [user] = useState({
-    username: "Ibrahim",
-    friendsCount: 6,
-    ratingsCount: 16,
-    followers: 3,
-    bio: "Movie lover 🎬 | Sci-Fi fan 🚀 | Orlando, FL 📍",
-  });
+  const [user, setUser] = useState(null);
+  const [ratings, setRatings] = useState([]);
+  const [friendsCount, setFriendsCount] = useState(0);
 
-  const [ratedMovies] = useState([
-    {
-    id: 1,
-    title: "The Dark Knight",
-    poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
-    rating: 5,
-    comment: "One of the greatest superhero films ever made."
-  },
-  {
-    id: 2,
-    title: "Interstellar",
-    poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-    rating: 4,
-    comment: "Amazing soundtrack and emotional depth."
-  },
-  {
-    id: 3,
-    title: "Spider-Man: No Way Home",
-    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
-    rating: 5,
-    comment: "Pure nostalgia and insane crowd energy."
-  },
-  {
-    id: 4,
-    title: "Inception",
-    poster: "https://image.tmdb.org/t/p/w500/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg",
-    rating: 5,
-    comment: "Mind-bending in the best way."
-  },
-  {
-    id: 5,
-    title: "The Social Network",
-    poster: "https://image.tmdb.org/t/p/w500/n0ybibhJtQ5icDqTp8eRytcIHJx.jpg",
-    rating: 4,
-    comment: "Oscar-worthy dialogue. Zuckerberg era defined."
-  },
-  {
-    id: 6,
-    title: "Avatar",
-    poster: "https://image.tmdb.org/t/p/w500/kyeqWdyUXW608qlYkRqosgbbJyK.jpg",
-    rating: 4,
-    comment: "Visuals still unmatched."
-  },
-  {
-    id: 7,
-    title: "The Matrix",
-    poster: "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
-    rating: 5,
-    comment: "A genre-defining sci-fi masterpiece."
-  },
-  {
-    id: 8,
-    title: "Joker",
-    poster: "https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg",
-    rating: 5,
-    comment: "A dark, powerful character study."
-  },
-  {
-    id: 9,
-    title: "The Wolf of Wall Street",
-    poster: "https://image.tmdb.org/t/p/w500/pWHf4khOloNVfCxscsXFj3jj6gP.jpg",
-    rating: 5,
-    comment: "DiCaprio unleashed."
-  },
-  {
-    id: 10,
-    title: "Tenet",
-    poster: "https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg",
-    rating: 4,
-    comment: "A mind-bending time inversion trip."
-  },
-  {
-    id: 11,
-    title: "Oppenheimer",
-    poster: "https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg",
-    rating: 5,
-    comment: "A haunting portrait of a complicated genius."
-  },
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const userId = localStorage.getItem("userId");
 
-  {
-    id: 12,
-    title: "The Shawshank Redemption",
-    poster: "https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg",
-    rating: 5,
-    comment: "Widely considered the greatest film ever made."
-  },
-  {
-    id: 13,
-    title: "La La Land",
-    poster: "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg",
-    rating: 4,
-    comment: "A colorful emotional ride."
-  },
-  {
-    id: 14,
-    title: "Shutter Island",
-    poster: "https://image.tmdb.org/t/p/w500/kve20tXwUZpu4GUX8l6X7Z4jmL6.jpg",
-    rating: 5,
-    comment: "Insanely clever twist."
-  },
-  {
-    id: 15,
-    title: "The Avengers",
-    poster: "https://image.tmdb.org/t/p/w500/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg",
-    rating: 4,
-    comment: "The movie that changed everything."
-  },
-  {
-    id: 16,
-    title: "The Batman",
-    poster: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
-    rating: 5,
-    comment: "Dark, grounded, and beautifully shot."
-  }
-  ]);
+  useEffect(() => {
+    if (storedUser) {
+      setUser(storedUser);
+    }
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const resRatings = await api.post("/api/getMoviesSeen", { userId });
+      const allMovies = resRatings.data.movies || [];
+
+      const sorted = allMovies.sort((a, b) => {
+        if (b.rating !== a.rating) return b.rating - a.rating;
+        return new Date(b.dateViewed) - new Date(a.dateViewed);
+      });
+
+      setRatings(sorted);
+
+      const resFriends = await api.post("/api/viewFriendsList", { userId });
+      setFriendsCount(resFriends.data.friendsList?.length || 0);
+    } catch (err) {
+      console.error("Error loading profile stats:", err);
+    }
+  };
+
+  if (!user) return <div className="profile-page">Loading...</div>;
 
   return (
     <div className="profile-page">
-      <div className="profile-header-instagram">
+      <h1 className="profile-username">
+        {user.firstName} {user.lastName}
+      </h1>
 
-        <div className="profile-avatar-wrapper">
-          <div className="profile-avatar"></div>
+      <div className="profile-stats-row center-row">
+        <div className="profile-stat-item">
+          <span className="stat-value">{ratings.length}</span>
+          <span className="stat-label">Rated</span>
         </div>
 
-        <div className="profile-user-info">
-          <h2 className="profile-username">{user.username}</h2>
-
-          <button className="profile-addfriend-btn">Add Friend</button>
-
-          <div className="profile-stats-row">
-            <Link to="/ratings" className="profile-stat-item clickable">
-              <span className="stat-value">{user.ratingsCount}</span>
-              <span className="stat-label">Rated</span>
-            </Link>
-
-            <Link to="/friends" className="profile-stat-item clickable">
-              <span className="stat-value">{user.friendsCount}</span>
-              <span className="stat-label">Friends</span>
-            </Link>
-
-            <Link to="/followers" className="profile-stat-item clickable">
-              <span className="stat-value">{user.followers}</span>
-              <span className="stat-label">Followers</span>
-            </Link>
-          </div>
-
-          <p className="profile-bio-box">{user.bio}</p>
+        <div className="profile-stat-item">
+          <span className="stat-value">{friendsCount}</span>
+          <span className="stat-label">Friends</span>
         </div>
-
       </div>
 
-      <h3 className="profile-section-title">Your Ratings</h3>
+      <h2 className="profile-section-title">Your Top Ratings</h2>
 
       <div className="profile-movie-grid">
-        {ratedMovies.map((movie) => (
-          <div key={movie.id} className="profile-movie-grid-item">
+        {ratings.slice(0, 6).map((movie) => (
+          <div key={movie.tmdbId} className="profile-movie-grid-item">
             <img src={movie.poster} alt={movie.title} />
+            <div className="rating-stars">{movie.rating}★</div>
           </div>
         ))}
       </div>
-
     </div>
   );
 }
