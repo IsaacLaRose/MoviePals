@@ -747,24 +747,4 @@ exports.setApp = function (app, client) {
     }
   });
 
-  app.post('/api/updateBio', async (req, res) => {
-    const { userId, bio } = req.body;
-    const db = client.db('Movie_App');
-
-    if (!userId) {
-      return res.status(400).json({ error: "Missing userId" });
-    }
-
-    try {
-      await db.collection('users').updateOne(
-        { _id: new ObjectId(userId) },
-        { $set: { bio } }
-      );
-
-      res.status(200).json({ message: "Bio updated successfully" });
-    } catch (err) {
-      res.status(500).json({ error: "Error updating bio" });
-    }
-  });
-
 }
