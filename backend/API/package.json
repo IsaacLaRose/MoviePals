@@ -4,7 +4,9 @@
   "description": "",
   "main": "api.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:verbose": "jest --verbose",
     "start": "node server.js"
   },
   "keywords": [],
@@ -21,5 +23,26 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.10",
     "resend": "^6.5.2"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.js",
+      "**/?(*.)+(spec|test).js"
+    ],
+    "collectCoverageFrom": [
+      "*.js",
+      "!server.js",
+      "!node_modules/**",
+      "!coverage/**"
+    ],
+    "verbose": true,
+    "testTimeout": 10000
   }
 }
