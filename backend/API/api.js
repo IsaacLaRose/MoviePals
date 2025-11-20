@@ -4,68 +4,200 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = require('mongodb');
 const sendEmail = require('./sendEmail');
 const crypto = require('crypto');
-require('dotenv').config();
 const { searchMovie } = require('./moviedb.js');
 
-exports.setApp = function (app, client, dbName = 'Movie_App') {
-  const db = client.db(dbName); // now uses passed dbName or defaults to production
 
-  //const db = client.db('Movie_App');
-  app.post('/api/register', async (req, res, next) => {
-    const { firstName, lastName, username, email, phone, password } = req.body;
+console.log('APP_URL:', process.env.APP_URL);
+console.log('EMAIL_FROM:', process.env.EMAIL_FROM);
 
-    try {
-      const existingUser = await db.collection('users').findOne({ $or: [{ username }, { email }] });
-      //Ensure no duplicate usernames/emails
-      if (existingUser) {
-        return res.status(400).json({ error: 'Username or email already exists.' });
-      }
 
-      //use bcrypt for password hashing
-      const bcryptsalt = await bcrypt.genSalt(10);
-      const hash = await bcrypt.hash(password, bcryptsalt);
+exports.setApp = function (app, client) {
+  const db = client.db('Movie_App');
+app.post('/api/register', async (req, res) => {
+  try {
+    const { firstName, lastName, username, email, phoneNumber, password } = req.body;
+    
+    console.log('=== REGISTRATION START ===');
+    console.log('Request body:', { firstName, lastName, username, email, phoneNumber });
 
-      //Insert into database
-      const result = await db.collection('users').insertOne(
-        { firstName, lastName, username, email, phone, password: hash, dateCreated: new Date() });
+    // Check if user already exists - USE NATIVE MONGODB
+    const existingUser = await db.collection('users').findOne({ 
+      $or: [{ email }, { username }] 
+    });
+    
+    if (existingUser) {
+      console.log('❌ User already exists:', existingUser.email);
+      return res.status(400).json({ 
+        message: 'User with this email or username already exists' 
+      });
+    }
 
-      const token = crypto.randomBytes(32).toString('hex');
-      const expires = new Date(Date.now() + 1000 * 60 * 30);
+    console.log('✓ User does not exist, proceeding...');
 
-      await db.collection('users').updateOne({ _id: result.insertedId }, { $set: { verificationToken: token, verificationExpires: expires, isVerified: false } });
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('✓ Password hashed');
 
-      const verificationURL = `${process.env.APP_URL}/api/verifyEmail?token=${token}&id=${result.insertedId}`;
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
 
-      await sendEmail(
-        email,
-        'Verify your MoviePals Account',
-        `<p>Welcome, ${firstName}!</p>
-        <p>Click below to verify your email:</p>
-        <a href="${verificationURL}">${verificationURL}</a>
-        <p>This link will expire in 30 minutes.</p>`
+    // Create user object - USE NATIVE MONGODB
+    const newUser = {
+      firstName,
+      lastName,
+      username,
+      email,
+      phoneNumber,
+      password: hashedPassword,
+      isVerified: false,
+      verificationToken,
+      verificationExpires,
+      dateCreated: new Date()
+    };
+
+    const result = await db.collection('users').insertOne(newUser);
+    console.log('✓ User saved to database:', result.insertedId);
+
+    // Send verification email
+    const verificationLink = `${process.env.APP_URL}/verify-email?token=${verificationToken}&id=${result.insertedId}`;
+    
+    console.log('Sending verification email...');
+    await sendEmail(
+      email,
+      'Verify your MoviePals account',
+      `<p>Hello ${firstName},</p>
+       <p>Click <a href="${verificationLink}">here</a> to verify your email.</p>
+       <p>This link will expire in 30 minutes.</p>`
+    );
+    
+    console.log('✓ Verification email sent to:', email);
+    console.log('=== REGISTRATION SUCCESS ===');
+
+    return res.status(201).json({ 
+      message: 'Registration successful! Please check your email to verify your account.'
+    });
+
+  } catch (error) {
+    console.error('❌ REGISTRATION ERROR:', error);
+    console.error('Error stack:', error.stack);
+    
+    return res.status(500).json({ 
+      message: error.message || 'Registration failed. Please try again.'
+    });
+  }
+});
+
+// ================================
+// ADD FAVORITE
+// ================================
+app.post('/api/addFavorite', async (req, res) => {
+  const db = client.db('Movie_App');
+  const { userId, tmdbId, title, poster, year, overview, manuallyAdded } = req.body;
+
+  if (!userId || !tmdbId) {
+    return res.status(400).json({ error: 'Missing userId or tmdbId' });
+  }
+
+  try {
+    // Check if already in favorites
+    const existing = await db.collection('favorites').findOne({ userId, tmdbId });
+
+    if (existing) {
+      // If already exists, just update manuallyAdded
+      await db.collection('favorites').updateOne(
+        { userId, tmdbId },
+        { $set: { manuallyAdded: manuallyAdded ?? existing.manuallyAdded } }
       );
 
-      //Return statement
-      res.status(201).json({
-        id: result.insertedId,
-        firstName,
-        lastName,
-        username,
-        email,
-        phone,
-        message: 'Successful registration - please verify your email so you can log in'
-      });
-    } catch (e) {
-      console.error(e);
-      error = 'Error during registration';
-      res.status(500).json({ error: 'Error during registration' });
+      return res.status(200).json({ message: 'Favorite updated.' });
     }
-  });
+
+    // Insert new favorite
+    await db.collection('favorites').insertOne({
+      userId,
+      tmdbId,
+      title,
+      poster,
+      year,
+      overview,
+      manuallyAdded: manuallyAdded ?? false,
+      dateAdded: new Date()
+    });
+
+    res.status(201).json({ message: 'Favorite added.' });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Error adding favorite' });
+  }
+});
+
+
+// ================================
+// REMOVE FAVORITE
+// ================================
+app.post('/api/removeFavorite', async (req, res) => {
+  const db = client.db('Movie_App');
+  const { userId, tmdbId } = req.body;
+
+  if (!userId || !tmdbId) {
+    return res.status(400).json({ error: 'Missing userId or tmdbId' });
+  }
+
+  try {
+    await db.collection('favorites').deleteOne({ userId, tmdbId });
+    res.status(200).json({ message: 'Favorite removed.' });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Error removing favorite' });
+  }
+});
+
+
+
+
+// ================================
+// GET USER FAVORITES
+// ================================
+app.post('/api/getFavorites', async (req, res) => {
+  const db = client.db('Movie_App');
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing userId' });
+  }
+
+  try {
+    const favs = await db.collection('favorites')
+      .find({ userId })
+      .sort({ dateAdded: -1 })
+      .toArray();
+
+    res.status(200).json({ favorites: favs });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Error fetching favorites' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   app.post('/api/login', async (req, res, next) => {
     const { login, password } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     try {
       //Try to find user login
@@ -104,12 +236,11 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
       console.error(e);
       return res.status(500).json({ error: 'Error during login' });
     }
-  });
+  });;
 
   app.post('/api/addupdateRating', async (req, res, next) => {
     const { userId, tmdbId, title, year, poster, overview, rating, comment, dateViewed } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     //Ensure proper userId, tmdbId
     if (!userId || !tmdbId) {
@@ -128,6 +259,33 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
           { userId, tmdbId },
           { $set: { rating, comment, dateViewed, dateUpdated: new Date() } }
         );
+        
+
+        // AUTO-FAVORITE LOGIC
+if (rating === 5) {
+  // Auto-add to favorites
+  await db.collection('favorites').updateOne(
+    { userId, tmdbId },
+    {
+      $set: {
+        title,
+        poster,
+        year,
+        overview,
+        manuallyAdded: existing?.manuallyAdded ?? false,
+        dateAdded: new Date()
+      }
+    },
+    { upsert: true }
+  );
+} else {
+  // Remove from favorites ONLY if it was auto-added
+  const fav = await db.collection('favorites').findOne({ userId, tmdbId });
+
+  if (fav && fav.manuallyAdded === false) {
+    await db.collection('favorites').deleteOne({ userId, tmdbId });
+  }
+}
 
         //Return updated rating
         res.status(200).json({
@@ -164,8 +322,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/getMoviesSeen', async (req, res, next) => {
     const { userId } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     //Ensure proper userId
     if (!userId) {
@@ -185,8 +342,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/deleteMovieSeen', async (req, res, next) => {
     const { userId, tmdbId } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     if (!userId || !tmdbId) {
       return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
@@ -210,8 +366,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/addToWatchlist', async (req, res, next) => {
     const { userId, tmdbId, title, year, poster, overview } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     if (!userId || !tmdbId) {
       return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
@@ -245,8 +400,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/findUserWatchlist', async (req, res, next) => {
     const { userId } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     if (!userId) {
       return res.status(400).json({ error: 'Invalid userId' });
@@ -263,9 +417,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/deleteFromWatchlist', async (req, res, next) => {
     const { userId, tmdbId } = req.body;
-    
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     try {
       const result = await db.collection('watchlist').deleteOne({ userId, tmdbId });
@@ -282,8 +434,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/moveToMoviesSeen', async (req, res, next) => {
     const { userId, tmdbId, comment, rating, dateViewed } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     if (!userId || !tmdbId) {
       return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
@@ -326,8 +477,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/addFriend', async (req, res, next) => {
     const { userId, friendsId } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     if (!userId || !friendsId) {
       return res.status(400).json({ error: 'Missing required fields (userId, friendsId)' });
@@ -374,8 +524,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/removeFriend', async (req, res, next) => {
     const { userId, friendsId } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     try {
       //Ensure we delete both ways when deleting
@@ -422,8 +571,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.get('/api/verifyEmail', async (req, res, next) => {
     const { token, id } = req.query;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     try {
       const user = await db.collection('users').findOne({ _id: new ObjectId(id), verificationToken: token, verificationExpires: { $gt: new Date() } });
@@ -446,8 +594,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/resendVerification', async (req, res, next) => {
     const { email } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     const user = await db.collection('users').findOne({ email });
     if (!user) {
@@ -478,8 +625,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/requestPasswordReset', async (req, res, next) => {
     const { email } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     const user = await db.collection('users').findOne({ email });
 
@@ -509,8 +655,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/resetPassword', async (req, res, next) => {
     const { id, token, newPassword } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     const user = await db.collection('users').findOne({ _id: new ObjectId(id), resetToken: token, resetExpires: { $gt: new Date() } });
 
@@ -528,8 +673,7 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
 
   app.post('/api/getFriendRatingsForMovie', async (req, res, next) => {
     const { userId, tmdbId } = req.body;
-    const db = client.db(dbName);
-    //const db = client.db('Movie_App');
+    const db = client.db('Movie_App');
 
     if (!userId || !tmdbId) {
       return res.status(400).json({ error: 'Missing required fields (userId, tmdbId)' });
@@ -613,4 +757,3 @@ exports.setApp = function (app, client, dbName = 'Movie_App') {
     }
   })
 }
-
