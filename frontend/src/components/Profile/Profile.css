@@ -8,6 +8,11 @@
   background: linear-gradient(180deg, #0a0a0a 0%, #1a0505 50%, #0a0a0a 100%);
 }
 
+.profile-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
 
 /* =========================================================
    INSTAGRAM-STYLE TOP HEADER
