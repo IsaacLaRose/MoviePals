@@ -250,3 +250,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ⭐ Equal-sized, centered stats boxes */
+.stats-grid {
+  grid-template-columns: repeat(2, 1fr) !important;
+  max-width: 600px;
+  margin: 2rem auto;
+}
