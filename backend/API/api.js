@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = require('mongodb');
 const sendEmail = require('./sendEmail');
 const crypto = require('crypto');
+require('dotenv').config();
 const { searchMovie } = require('./moviedb.js');
 
 
@@ -13,187 +14,80 @@ console.log('EMAIL_FROM:', process.env.EMAIL_FROM);
 
 exports.setApp = function (app, client) {
   const db = client.db('Movie_App');
-app.post('/api/register', async (req, res) => {
-  try {
-    const { firstName, lastName, username, email, phoneNumber, password } = req.body;
-    
-    console.log('=== REGISTRATION START ===');
-    console.log('Request body:', { firstName, lastName, username, email, phoneNumber });
+  app.post('/api/register', async (req, res) => {
+    try {
+      const { firstName, lastName, username, email, phoneNumber, password } = req.body;
 
-    // Check if user already exists - USE NATIVE MONGODB
-    const existingUser = await db.collection('users').findOne({ 
-      $or: [{ email }, { username }] 
-    });
-    
-    if (existingUser) {
-      console.log('❌ User already exists:', existingUser.email);
-      return res.status(400).json({ 
-        message: 'User with this email or username already exists' 
+      console.log('=== REGISTRATION START ===');
+      console.log('Request body:', { firstName, lastName, username, email, phoneNumber });
+
+      // Check if user already exists - USE NATIVE MONGODB
+      const existingUser = await db.collection('users').findOne({
+        $or: [{ email }, { username }]
       });
-    }
 
-    console.log('✓ User does not exist, proceeding...');
+      if (existingUser) {
+        console.log('❌ User already exists:', existingUser.email);
+        return res.status(400).json({
+          message: 'User with this email or username already exists'
+        });
+      }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('✓ Password hashed');
+      console.log('✓ User does not exist, proceeding...');
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      console.log('✓ Password hashed');
 
-    // Create user object - USE NATIVE MONGODB
-    const newUser = {
-      firstName,
-      lastName,
-      username,
-      email,
-      phoneNumber,
-      password: hashedPassword,
-      isVerified: false,
-      verificationToken,
-      verificationExpires,
-      dateCreated: new Date()
-    };
+      // Generate verification token
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationExpires = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
 
-    const result = await db.collection('users').insertOne(newUser);
-    console.log('✓ User saved to database:', result.insertedId);
+      // Create user object - USE NATIVE MONGODB
+      const newUser = {
+        firstName,
+        lastName,
+        username,
+        email,
+        phoneNumber,
+        password: hashedPassword,
+        isVerified: false,
+        verificationToken,
+        verificationExpires,
+        dateCreated: new Date()
+      };
 
-    // Send verification email
-    const verificationLink = `${process.env.APP_URL}/verify-email?token=${verificationToken}&id=${result.insertedId}`;
-    
-    console.log('Sending verification email...');
-    await sendEmail(
-      email,
-      'Verify your MoviePals account',
-      `<p>Hello ${firstName},</p>
+      const result = await db.collection('users').insertOne(newUser);
+      console.log('✓ User saved to database:', result.insertedId);
+
+      // Send verification email
+      const verificationLink = `${process.env.APP_URL}/verify-email?token=${verificationToken}&id=${result.insertedId}`;
+
+      console.log('Sending verification email...');
+      await sendEmail(
+        email,
+        'Verify your MoviePals account',
+        `<p>Hello ${firstName},</p>
        <p>Click <a href="${verificationLink}">here</a> to verify your email.</p>
        <p>This link will expire in 30 minutes.</p>`
-    );
-    
-    console.log('✓ Verification email sent to:', email);
-    console.log('=== REGISTRATION SUCCESS ===');
-
-    return res.status(201).json({ 
-      message: 'Registration successful! Please check your email to verify your account.'
-    });
-
-  } catch (error) {
-    console.error('❌ REGISTRATION ERROR:', error);
-    console.error('Error stack:', error.stack);
-    
-    return res.status(500).json({ 
-      message: error.message || 'Registration failed. Please try again.'
-    });
-  }
-});
-
-// ================================
-// ADD FAVORITE
-// ================================
-app.post('/api/addFavorite', async (req, res) => {
-  const db = client.db('Movie_App');
-  const { userId, tmdbId, title, poster, year, overview, manuallyAdded } = req.body;
-
-  if (!userId || !tmdbId) {
-    return res.status(400).json({ error: 'Missing userId or tmdbId' });
-  }
-
-  try {
-    // Check if already in favorites
-    const existing = await db.collection('favorites').findOne({ userId, tmdbId });
-
-    if (existing) {
-      // If already exists, just update manuallyAdded
-      await db.collection('favorites').updateOne(
-        { userId, tmdbId },
-        { $set: { manuallyAdded: manuallyAdded ?? existing.manuallyAdded } }
       );
 
-      return res.status(200).json({ message: 'Favorite updated.' });
+      console.log('✓ Verification email sent to:', email);
+      console.log('=== REGISTRATION SUCCESS ===');
+
+      return res.status(201).json({
+        message: 'Registration successful! Please check your email to verify your account.'
+      });
+
+    } catch (error) {
+      console.error('❌ REGISTRATION ERROR:', error);
+      console.error('Error stack:', error.stack);
+
+      return res.status(500).json({
+        message: error.message || 'Registration failed. Please try again.'
+      });
     }
-
-    // Insert new favorite
-    await db.collection('favorites').insertOne({
-      userId,
-      tmdbId,
-      title,
-      poster,
-      year,
-      overview,
-      manuallyAdded: manuallyAdded ?? false,
-      dateAdded: new Date()
-    });
-
-    res.status(201).json({ message: 'Favorite added.' });
-
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Error adding favorite' });
-  }
-});
-
-
-// ================================
-// REMOVE FAVORITE
-// ================================
-app.post('/api/removeFavorite', async (req, res) => {
-  const db = client.db('Movie_App');
-  const { userId, tmdbId } = req.body;
-
-  if (!userId || !tmdbId) {
-    return res.status(400).json({ error: 'Missing userId or tmdbId' });
-  }
-
-  try {
-    await db.collection('favorites').deleteOne({ userId, tmdbId });
-    res.status(200).json({ message: 'Favorite removed.' });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Error removing favorite' });
-  }
-});
-
-
-
-
-// ================================
-// GET USER FAVORITES
-// ================================
-app.post('/api/getFavorites', async (req, res) => {
-  const db = client.db('Movie_App');
-  const { userId } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: 'Missing userId' });
-  }
-
-  try {
-    const favs = await db.collection('favorites')
-      .find({ userId })
-      .sort({ dateAdded: -1 })
-      .toArray();
-
-    res.status(200).json({ favorites: favs });
-
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Error fetching favorites' });
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
+  });
 
   app.post('/api/login', async (req, res, next) => {
     const { login, password } = req.body;
@@ -236,7 +130,7 @@ app.post('/api/getFavorites', async (req, res) => {
       console.error(e);
       return res.status(500).json({ error: 'Error during login' });
     }
-  });;
+  });
 
   app.post('/api/addupdateRating', async (req, res, next) => {
     const { userId, tmdbId, title, year, poster, overview, rating, comment, dateViewed } = req.body;
@@ -259,33 +153,6 @@ app.post('/api/getFavorites', async (req, res) => {
           { userId, tmdbId },
           { $set: { rating, comment, dateViewed, dateUpdated: new Date() } }
         );
-        
-
-        // AUTO-FAVORITE LOGIC
-if (rating === 5) {
-  // Auto-add to favorites
-  await db.collection('favorites').updateOne(
-    { userId, tmdbId },
-    {
-      $set: {
-        title,
-        poster,
-        year,
-        overview,
-        manuallyAdded: existing?.manuallyAdded ?? false,
-        dateAdded: new Date()
-      }
-    },
-    { upsert: true }
-  );
-} else {
-  // Remove from favorites ONLY if it was auto-added
-  const fav = await db.collection('favorites').findOne({ userId, tmdbId });
-
-  if (fav && fav.manuallyAdded === false) {
-    await db.collection('favorites').deleteOne({ userId, tmdbId });
-  }
-}
 
         //Return updated rating
         res.status(200).json({
@@ -741,19 +608,163 @@ if (rating === 5) {
   });
 
   app.get('/api/movies/search', async (req, res, next) => {
-    try{ 
+    try {
       const query = req.query.query;
 
       if (!query) {
-        return res.status(400).json({ error: 'Missing search query.'});
+        return res.status(400).json({ error: 'Missing search query.' });
       }
 
       const results = await searchMovie(query);
 
       res.status(200).json({ results });
-    } catch(e) {
+    } catch (e) {
       console.error('TMDB Search Error:', e);
-      res.status(500).json({ error: 'Failed to fetch movies from TMDB.'});
+      res.status(500).json({ error: 'Failed to fetch movies from TMDB.' });
     }
-  })
+  });
+
+  app.post('/api/getFavorites', async (req, res) => {
+    const db = client.db('Movie_App');
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
+
+    try {
+      const favs = await db.collection('favorites')
+        .find({ userId })
+        .sort({ dateAdded: -1 })
+        .toArray();
+
+      res.status(200).json({ favorites: favs });
+
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Error fetching favorites' });
+    }
+  });
+
+  app.post('/api/removeFavorite', async (req, res) => {
+    const db = client.db('Movie_App');
+    const { userId, tmdbId } = req.body;
+
+    if (!userId || !tmdbId) {
+      return res.status(400).json({ error: 'Missing userId or tmdbId' });
+    }
+
+    try {
+      await db.collection('favorites').deleteOne({ userId, tmdbId });
+      res.status(200).json({ message: 'Favorite removed.' });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Error removing favorite' });
+    }
+  });
+
+  app.post('/api/addFavorite', async (req, res) => {
+    const db = client.db('Movie_App');
+    const { userId, tmdbId, title, poster, year, overview, manuallyAdded } = req.body;
+
+    if (!userId || !tmdbId) {
+      return res.status(400).json({ error: 'Missing userId or tmdbId' });
+    }
+
+    try {
+      // Check if already in favorites
+      const existing = await db.collection('favorites').findOne({ userId, tmdbId });
+
+      if (existing) {
+        // If already exists, just update manuallyAdded
+        await db.collection('favorites').updateOne(
+          { userId, tmdbId },
+          { $set: { manuallyAdded: manuallyAdded ?? existing.manuallyAdded } }
+        );
+
+        return res.status(200).json({ message: 'Favorite updated.' });
+      }
+
+      // Insert new favorite
+      await db.collection('favorites').insertOne({
+        userId,
+        tmdbId,
+        title,
+        poster,
+        year,
+        overview,
+        manuallyAdded: manuallyAdded ?? false,
+        dateAdded: new Date()
+      });
+
+      res.status(201).json({ message: 'Favorite added.' });
+
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Error adding favorite' });
+    }
+  });
+
+  app.post('/api/getUserProfile', async (req, res) => {
+    const { userId } = req.body;
+    const db = client.db("Movie_App");
+
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
+    }
+
+    try {
+      const user = await db.collection("users").findOne(
+        { _id: new ObjectId(userId) },
+        {
+          projection: {
+            password: 0,
+            verificationToken: 0,
+            verificationExpires: 0,
+            resetToken: 0,
+            resetExpires: 0
+          }
+        }
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      return res.status(200).json({
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        dateCreated: user.dateCreated
+      });
+
+    } catch (err) {
+      console.error("Error loading profile:", err);
+      return res.status(500).json({ error: "Server error fetching profile" });
+    }
+  });
+
+  app.post('/api/updateBio', async (req, res) => {
+    const { userId, bio } = req.body;
+    const db = client.db('Movie_App');
+
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
+    }
+
+    try {
+      await db.collection('users').updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { bio } }
+      );
+
+      res.status(200).json({ message: "Bio updated successfully" });
+    } catch (err) {
+      res.status(500).json({ error: "Error updating bio" });
+    }
+  });
+
 }
