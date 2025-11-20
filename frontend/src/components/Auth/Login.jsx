@@ -18,10 +18,6 @@ function Login() {
     try {
       const userData = await authService.login({ login, password });
 
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      localStorage.setItem("userId", userData.id);
-
       navigate("/search");
     } catch (err) {
       setError(err.response?.data?.error || "Invalid email/username or password");
