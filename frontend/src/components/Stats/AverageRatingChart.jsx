@@ -10,21 +10,11 @@ import {
 } from "recharts";
 
 function AverageRatingChart() {
-  // ⭐ FAKE DATA (looks realistic)
   const data = [
-    { month: "Jan", avg: 4.1 },
-    { month: "Feb", avg: 3.8 },
-    { month: "Mar", avg: 4.5 },
-    { month: "Apr", avg: 3.9 },
-    { month: "May", avg: 4.2 },
-    { month: "Jun", avg: 4.6 },
-    { month: "Jul", avg: 4.3 },
-    { month: "Aug", avg: 4.4 },
-    { month: "Sep", avg: 3.7 },
-    { month: "Oct", avg: 4.8 },
-    { month: "Nov", avg: 4.4 },
-    { month: "Dec", avg: 4.9 },
-  ];
+  { month: "Oct", rating: 4.8 },
+  { month: "Nov", rating: 4.5 },
+  { month: "Dec", rating: 4.9 }
+];
 
   return (
     <div
