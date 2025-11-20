@@ -747,4 +747,85 @@ exports.setApp = function (app, client) {
     }
   });
 
+  app.post('/api/searchUsers', async (req, res) => {
+    const { userId, query } = req.body;
+    const db = client.db('Movie_App');
+
+    if (!query) {
+      return res.status(400).json({ error: "Search query required" });
+    }
+
+    try {
+      const friends = await db.collection('friends')
+        .find({ userId })
+        .project({ friendsId: 1 })
+        .toArray();
+
+      const friendIds = friends.map(f => f.friendsId);
+
+      const users = await db.collection('users')
+        .find({
+          _id: { $ne: new ObjectId(userId) },
+          username: { $regex: query, $options: "i" }
+        })
+        .project({
+          firstName: 1,
+          lastName: 1,
+          username: 1
+        })
+        .toArray();
+
+      const results = users.filter(
+        u => !friendIds.includes(u._id.toString())
+      );
+
+      res.status(200).json({ users: results });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Search failed" });
+    }
+  });
+
+  app.post('/api/getUserProfileByUsername', async (req, res) => {
+    const { username } = req.body;
+    const db = client.db("Movie_App");
+
+    if (!username) {
+      return res.status(400).json({ error: "Missing username" });
+    }
+
+    try {
+      const user = await db.collection("users").findOne(
+        { username: username },
+        {
+          projection: {
+            password: 0,
+            verificationToken: 0,
+            verificationExpires: 0,
+            resetToken: 0,
+            resetExpires: 0
+          }
+        }
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      return res.status(200).json({
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        dateCreated: user.dateCreated
+      });
+
+    } catch (err) {
+      console.error("Error loading profile:", err);
+      return res.status(500).json({ error: "Server error fetching profile" });
+    }
+  });
 }
