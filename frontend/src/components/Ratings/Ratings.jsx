@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
-import { addFavorite, removeFavorite } from "../../services/favoritesService";
 import "./Ratings.css";
 
 function Ratings() {
@@ -11,24 +10,24 @@ function Ratings() {
 
   const userId = localStorage.getItem("userId");
 
-  // Load real ratings on page load
+  // Load ratings from DB
   useEffect(() => {
-    async function loadRatings() {
-      try {
-        const res = await api.post("/api/getMoviesSeen", { userId });
-        setRatings(res.data.movies);
-      } catch (err) {
-        console.error("Error loading ratings:", err);
-      }
-    }
-
     loadRatings();
-  }, [userId]);
+  }, []);
+
+  const loadRatings = async () => {
+    try {
+      const res = await api.post("/api/getMoviesSeen", { userId });
+      setRatings(res.data.movies || []);
+    } catch (err) {
+      console.error("Error loading ratings:", err);
+    }
+  };
 
   const openModal = (movie) => {
     setSelectedMovie(movie);
-    setTempRating(movie.rating);
-    setTempComment(movie.comment);
+    setTempRating(movie.rating || 0);
+    setTempComment(movie.comment || "");
   };
 
   const closeModal = () => {
@@ -39,7 +38,6 @@ function Ratings() {
     if (!selectedMovie) return;
 
     try {
-      // 1️⃣ Update rating in backend
       await api.post("/api/addupdateRating", {
         userId,
         tmdbId: selectedMovie.tmdbId,
@@ -49,34 +47,11 @@ function Ratings() {
         overview: selectedMovie.overview,
         rating: tempRating,
         comment: tempComment,
-        dateViewed: selectedMovie.dateViewed || new Date().toISOString()
+        dateViewed: selectedMovie.dateViewed || new Date().toISOString(),
       });
 
-      // 2️⃣ AUTO-FAVORITE LOGIC
-      if (tempRating === 5) {
-        await addFavorite({
-          userId,
-          tmdbId: selectedMovie.tmdbId,
-          title: selectedMovie.title,
-          poster: selectedMovie.poster,
-          year: selectedMovie.year,
-          overview: selectedMovie.overview,
-          manuallyAdded: false
-        });
-      } else {
-        // Remove only if it was auto-added
-        await removeFavorite(userId, selectedMovie.tmdbId);
-      }
-
-      // 3️⃣ Update UI immediately
-      setRatings((prev) =>
-        prev.map((m) =>
-          m.tmdbId === selectedMovie.tmdbId
-            ? { ...m, rating: tempRating, comment: tempComment }
-            : m
-        )
-      );
-
+      // Refresh UI
+      loadRatings();
       closeModal();
     } catch (err) {
       console.error("Error updating rating:", err);
@@ -92,13 +67,8 @@ function Ratings() {
         tmdbId: selectedMovie.tmdbId,
       });
 
-      setRatings((prev) =>
-        prev.filter((m) => m.tmdbId !== selectedMovie.tmdbId)
-      );
-
-      // Also remove from favorites
-      await removeFavorite(userId, selectedMovie.tmdbId);
-
+      // Refresh UI
+      setRatings((prev) => prev.filter((m) => m.tmdbId !== selectedMovie.tmdbId));
       closeModal();
     } catch (err) {
       console.error("Error deleting rating:", err);
@@ -112,6 +82,13 @@ function Ratings() {
   return (
     <div className="ratings-page">
       <h1 className="ratings-title">My Ratings</h1>
+
+      {/* ⭐ EMPTY STATE */}
+      {ratings.length === 0 && (
+        <div className="ratings-empty">
+          <p>You have not rated any movies yet.</p>
+        </div>
+      )}
 
       <div className="ratings-grid">
         {ratings.map((movie) => (
@@ -127,7 +104,10 @@ function Ratings() {
 
               <div className="star-row">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <span key={i} className={i <= movie.rating ? "star filled" : "star"}>
+                  <span
+                    key={i}
+                    className={i <= movie.rating ? "star filled" : "star"}
+                  >
                     ★
                   </span>
                 ))}
@@ -139,7 +119,7 @@ function Ratings() {
         ))}
       </div>
 
-      {/* MODAL */}
+      {/* ⭐ EDIT MODAL */}
       {selectedMovie && (
         <div className="modal-overlay">
           <div className="modal">
