@@ -1,8 +1,11 @@
-require('dotenv').config();
-
 async function sendEmail(to, subject, html) {
-    try {
+   console.error('===== SENDEMAIL FUNCTION CALLED =====');
+   console.error('TO:', to);
+   console.error('RESEND_API_KEY:', process.env.RESEND_API_KEY);    
+   try {
+        console.log(' SENDEMAIL FUNCTION CALLED');
         const apiKey = process.env.RESEND_API_KEY;
+        console.log('Using API Key:', apiKey);
         const from = process.env.EMAIL_FROM || 'MoviePals onboarding <onboarding@resend.dev>';
 
         const response = await fetch('https://api.resend.com/emails', {
