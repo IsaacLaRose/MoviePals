@@ -10,7 +10,6 @@ function Ratings() {
 
   const userId = localStorage.getItem("userId");
 
-  // Load ratings from DB
   useEffect(() => {
     loadRatings();
   }, []);
@@ -50,7 +49,6 @@ function Ratings() {
         dateViewed: selectedMovie.dateViewed || new Date().toISOString(),
       });
 
-      // Refresh UI
       loadRatings();
       closeModal();
     } catch (err) {
@@ -67,8 +65,9 @@ function Ratings() {
         tmdbId: selectedMovie.tmdbId,
       });
 
-      // Refresh UI
-      setRatings((prev) => prev.filter((m) => m.tmdbId !== selectedMovie.tmdbId));
+      setRatings((prev) =>
+        prev.filter((m) => m.tmdbId !== selectedMovie.tmdbId)
+      );
       closeModal();
     } catch (err) {
       console.error("Error deleting rating:", err);
@@ -83,7 +82,6 @@ function Ratings() {
     <div className="ratings-page">
       <h1 className="ratings-title">My Ratings</h1>
 
-      {/* ⭐ EMPTY STATE */}
       {ratings.length === 0 && (
         <div className="ratings-empty">
           <p>You have not rated any movies yet.</p>
@@ -119,14 +117,14 @@ function Ratings() {
         ))}
       </div>
 
-      {/* ⭐ EDIT MODAL */}
+      {/* ⭐ FIXED EDIT MODAL */}
       {selectedMovie && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <div className="ratingsModal-overlay">
+          <div className="ratingsModal-window">
             <h2>Edit Rating</h2>
             <h3>{selectedMovie.title}</h3>
 
-            <div className="star-select">
+            <div className="ratingsModal-stars">
               {[1, 2, 3, 4, 5].map((i) => (
                 <span
                   key={i}
@@ -139,21 +137,19 @@ function Ratings() {
             </div>
 
             <textarea
-              className="comment-box"
+              className="ratingsModal-comment"
               value={tempComment}
               maxLength={350}
               onChange={(e) => {
                 const words = e.target.value.split(/\s+/);
-                if (words.length <= 50) {
-                  setTempComment(e.target.value);
-                }
+                if (words.length <= 50) setTempComment(e.target.value);
               }}
               placeholder="Write your thoughts (max 50 words)..."
             />
 
             <p className="word-count">{wordCount} / 50 words</p>
 
-            <div className="modal-buttons">
+            <div className="ratingsModal-buttons">
               <button className="btn-save" onClick={saveChanges}>Save</button>
               <button className="btn-delete" onClick={deleteRating}>Delete</button>
               <button className="btn-cancel" onClick={closeModal}>Cancel</button>
