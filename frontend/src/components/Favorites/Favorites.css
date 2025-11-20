@@ -1,10 +1,16 @@
+/* ================================
+   PAGE WRAPPER
+================================ */
 .favorites-page {
   padding: 2rem;
   color: white;
-  background: linear-gradient(180deg, #0a0a0a, #1a0505, #0a0a0a);
   min-height: 100vh;
+  background: linear-gradient(180deg, #0a0a0a, #1a0505, #0a0a0a);
 }
 
+/* ================================
+   TITLE
+================================ */
 .favorites-title {
   text-align: center;
   font-size: 2.4rem;
@@ -12,7 +18,36 @@
   margin-bottom: 2rem;
 }
 
-/* Grid layout */
+/* ================================
+   EMPTY STATE
+================================ */
+.favorites-empty {
+  text-align: center;
+  margin-top: 3rem;
+  opacity: 0.85;
+  font-size: 1.2rem;
+}
+
+.find-movies-btn {
+  margin-top: 1rem;
+  padding: 0.8rem 1.6rem;
+  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.find-movies-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(185, 28, 28, 0.4);
+}
+
+/* ================================
+   FAVORITES GRID
+================================ */
 .favorites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -21,50 +56,67 @@
   margin: auto;
 }
 
-/* Card styling */
+/* ================================
+   CARD STYLING
+================================ */
 .favorites-card {
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(185, 28, 28, 0.3);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   transition: 0.3s ease;
 }
 
 .favorites-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
   border-color: rgba(185, 28, 28, 0.6);
+  box-shadow: 0 10px 25px rgba(185, 28, 28, 0.25);
 }
 
-.favorites-card img {
+/* Clickable poster */
+.favorites-poster {
   width: 100%;
   height: 330px;
   object-fit: cover;
+  cursor: pointer;
+  transition: 0.25s ease-in-out;
 }
 
+.favorites-poster:hover {
+  filter: brightness(0.85);
+}
+
+/* ================================
+   CARD INFO
+================================ */
 .favorites-info {
   padding: 1rem;
   text-align: center;
 }
 
 .favorites-info h3 {
-  margin-bottom: 0.3rem;
+  margin: 0.4rem 0 0.6rem;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
-/* Heart icon */
-.favorite-heart {
-  font-size: 1.3rem;
+/* ❤️ Favorite Tag */
+.favorite-tag {
+  font-size: 1rem;
   color: #ff4d4d;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
 }
 
-/* Remove button */
+/* ================================
+   REMOVE BUTTON
+================================ */
 .remove-btn {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1.2rem;
+  padding: 0.6rem 1.2rem;
   background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: none;
   border-radius: 6px;
   color: white;
+  font-weight: 600;
   cursor: pointer;
   transition: 0.3s ease;
 }
@@ -72,4 +124,13 @@
 .remove-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(185, 28, 28, 0.3);
+}
+
+/* ================================
+   RESPONSIVE FIXES
+================================ */
+@media (max-width: 600px) {
+  .favorites-poster {
+    height: 260px;
+  }
 }
