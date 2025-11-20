@@ -1,11 +1,11 @@
-/* ============================
+/* ============================================
    PAGE LAYOUT
-   ============================ */
+============================================ */
 .ratings-page {
   padding: 2rem;
   color: white;
-  background: linear-gradient(180deg, #0a0a0a, #1a0505, #0a0a0a);
   min-height: 100vh;
+  background: linear-gradient(180deg, #0a0a0a, #1a0505, #0a0a0a);
 }
 
 .ratings-title {
@@ -15,9 +15,36 @@
   margin-bottom: 2rem;
 }
 
-/* ============================
-   GRID LAYOUT
-   ============================ */
+/* ============================================
+   EMPTY STATE (NEW)
+============================================ */
+.ratings-empty {
+  text-align: center;
+  margin-top: 3rem;
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.ratings-empty-btn {
+  margin-top: 1rem;
+  padding: 0.8rem 1.6rem;
+  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  border-radius: 8px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.ratings-empty-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(185, 28, 28, 0.35);
+}
+
+/* ============================================
+   RATINGS GRID
+============================================ */
 .ratings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -26,28 +53,29 @@
   margin: auto;
 }
 
-/* ============================
+/* ============================================
    MOVIE CARD
-   ============================ */
+============================================ */
 .ratings-card {
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(185, 28, 28, 0.3);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   transition: 0.3s ease;
 }
 
 .ratings-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
   border-color: rgba(185, 28, 28, 0.6);
+  box-shadow: 0 10px 25px rgba(185, 28, 28, 0.25);
 }
 
 .ratings-card img {
   width: 100%;
   height: 330px;
   object-fit: cover;
-  border-bottom: 1px solid rgba(185, 28, 28, 0.2);
+  border-bottom: 1px solid rgba(185, 28, 28, 0.25);
 }
 
 .ratings-info {
@@ -57,11 +85,13 @@
 
 .ratings-info h3 {
   margin-bottom: 0.3rem;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
-/* ============================
-   STATIC GOLD STARS (Card)
-   ============================ */
+/* ============================================
+   STATIC GOLD STARS
+============================================ */
 .star-row {
   margin-top: 0.4rem;
 }
@@ -75,15 +105,26 @@
   color: gold;
 }
 
-/* ============================
+/* ============================================
+   MOVIE COMMENT BELOW POSTER
+============================================ */
+.movie-comment {
+  font-size: 0.9rem;
+  opacity: 0.75;
+  margin-top: 0.4rem;
+  min-height: 40px;
+  line-height: 1.2rem;
+}
+
+/* ============================================
    MODAL OVERLAY
-   ============================ */
+============================================ */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.78);
   display: flex;
   justify-content: center;
@@ -91,96 +132,60 @@
   z-index: 99999;
 }
 
-/* ============================
+/* ============================================
    MODAL WINDOW
-   ============================ */
+============================================ */
 .modal {
   background: #111;
   padding: 2rem;
-  width: 360px;
-  border-radius: 10px;
+  width: 380px;
+  border-radius: 12px;
   text-align: center;
   border: 1px solid rgba(185, 28, 28, 0.45);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
 }
 
 .modal h2 {
-  margin-bottom: 0.5rem;
-  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+  font-size: 1.7rem;
+  font-weight: 700;
 }
 
-/* ============================
+.modal h3 {
+  margin-bottom: 1rem;
+  opacity: 0.9;
+}
+
+/* ============================================
    EDITABLE STAR SELECTOR
-   ============================ */
+============================================ */
 .star-select .star {
   font-size: 2.2rem;
   cursor: pointer;
   padding: 0.25rem;
-  transition: 0.2s ease;
+  transition: 0.25s ease;
 }
 
 .star-select .star:hover {
   transform: scale(1.2);
+  color: gold;
 }
 
-/* ============================
-   MODAL BUTTONS
-   ============================ */
-.modal-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  margin-top: 1.2rem;
-}
-
-.btn-save {
-  background: #b91c1c;
-  padding: 0.7rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-delete {
-  background: #7f1d1d;
-  padding: 0.7rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-cancel {
-  background: #2e2e2e;
-  padding: 0.7rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-save:hover,
-.btn-delete:hover,
-.btn-cancel:hover {
-  opacity: 0.85;
-}
-
-/* Comment under card */
-.movie-comment {
-  font-size: 0.9rem;
-  opacity: 0.7;
-  margin-top: 0.4rem;
-  min-height: 40px;
-}
-
-/* Comment box in modal */
+/* ============================================
+   COMMENT BOX
+============================================ */
 .comment-box {
   width: 100%;
-  padding: 0.7rem;
-  background: #222;
+  height: 90px;
+  padding: 0.75rem;
+  background: #1a1a1a;
   color: white;
-  border: 1px solid rgba(185, 28, 28, 0.3);
+  border: 1px solid rgba(185, 28, 28, 0.35);
   border-radius: 6px;
-  resize: none;
   margin-top: 1rem;
-  height: 80px;
+  resize: none;
+  font-size: 0.95rem;
+  line-height: 1.2rem;
 }
 
 .word-count {
@@ -188,4 +193,47 @@
   font-size: 0.85rem;
   opacity: 0.7;
   text-align: right;
+}
+
+/* ============================================
+   MODAL BUTTONS
+============================================ */
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.btn-save,
+.btn-delete,
+.btn-cancel {
+  padding: 0.8rem;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+  color: white;
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #7f1d1d, #4c0f0f);
+  color: white;
+}
+
+.btn-cancel {
+  background: #333;
+  color: white;
+}
+
+.btn-save:hover,
+.btn-delete:hover,
+.btn-cancel:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
 }
