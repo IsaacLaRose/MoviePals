@@ -2,12 +2,21 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./MovieDetails.css";
 
+import api from "../../services/api";
+import { addFavorite, removeFavorite } from "../../services/favoritesService";
+import RateModal from "../RateModal/RateModal";
+
 function MovieDetails() {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [error, setError] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  // 🔥 Fetch movie from TMDB (temporary until backend replaces this)
+  const [showModal, setShowModal] = useState(false); // ⭐ NEW
+
+  const userId = localStorage.getItem("userId");
+
+  // Fetch movie + check if it's a favorite
   useEffect(() => {
     const fetchMovie = async () => {
       try {
@@ -16,11 +25,15 @@ function MovieDetails() {
         );
         const data = await res.json();
 
-        // TMDB returns { success:false } for invalid IDs
         if (data.success === false) {
           setError(true);
         } else {
           setMovie(data);
+
+          // ⭐ Check if this movie is already a favorite
+          const favRes = await api.post("/api/getFavorites", { userId });
+          const isFav = favRes.data.favorites.some((f) => f.tmdbId == id);
+          setIsFavorite(isFav);
         }
       } catch (err) {
         setError(true);
@@ -28,9 +41,78 @@ function MovieDetails() {
     };
 
     fetchMovie();
-  }, [id]);
+  }, [id, userId]);
 
-  // 🔥 Movie not found
+  // ❤️ Handle favorite toggle
+  const toggleFavorite = async () => {
+    if (!movie) return;
+
+    if (isFavorite) {
+      await removeFavorite(userId, movie.id);
+      setIsFavorite(false);
+    } else {
+      await addFavorite({
+        userId,
+        tmdbId: movie.id,
+        title: movie.title,
+        poster: movie.poster_path
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : null,
+        year: movie.release_date?.slice(0, 4),
+        overview: movie.overview,
+        manuallyAdded: true,
+      });
+      setIsFavorite(true);
+    }
+  };
+
+  // ⭐ SAVE RATING (INTEGRATED WITH BACKEND + AUTO-FAVORITE)
+  const handleSaveRating = async (stars, comment) => {
+    if (!movie) return;
+
+    try {
+      // 1️⃣ Save/update rating in backend
+      await api.post("/api/addupdateRating", {
+        userId,
+        tmdbId: movie.id,
+        title: movie.title,
+        year: movie.release_date?.slice(0, 4),
+        poster: movie.poster_path
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : null,
+        overview: movie.overview,
+        rating: stars,
+        comment,
+        dateViewed: new Date().toISOString()
+      });
+
+      // 2️⃣ AUTO-FAVORITE LOGIC
+      if (stars === 5) {
+          await addFavorite({
+            userId,
+            tmdbId: movie.id,
+            title: movie.title,
+            poster: movie.poster_path
+              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+              : null,
+            year: movie.release_date?.slice(0, 4),
+            overview: movie.overview,
+            manuallyAdded: false
+          });
+          setIsFavorite(true);
+      } else {
+          // Auto-remove ONLY if auto-added (backend handles rule)
+          await removeFavorite(userId, movie.id);
+          setIsFavorite(false);
+      }
+
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error saving rating:", error);
+    }
+  };
+
+  // Movie not found
   if (error) {
     return (
       <div className="movie-details-page">
@@ -74,9 +156,39 @@ function MovieDetails() {
             {movie.overview || "No description available."}
           </p>
 
-          <button className="rate-movie-btn">Rate This Movie</button>
+          {/* ⭐ OPEN RATING MODAL */}
+          <button
+            className="rate-movie-btn"
+            onClick={() => setShowModal(true)}
+          >
+            Rate This Movie
+          </button>
+
+          {/* ❤️ Favorite Button */}
+          <button
+            className="favorite-btn"
+            onClick={toggleFavorite}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: "32px",
+              cursor: "pointer",
+              marginTop: "12px",
+            }}
+          >
+            {isFavorite ? "❤️" : "🤍"}
+          </button>
         </div>
       </div>
+
+      {/* ⭐ RATE MODAL */}
+      {showModal && (
+        <RateModal
+          movie={movie}
+          onClose={() => setShowModal(false)}
+          onSave={handleSaveRating}
+        />
+      )}
     </div>
   );
 }
