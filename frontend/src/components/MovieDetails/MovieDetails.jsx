@@ -86,26 +86,6 @@ function MovieDetails() {
         dateViewed: new Date().toISOString()
       });
 
-      // 2️⃣ AUTO-FAVORITE LOGIC
-      if (stars === 5) {
-          await addFavorite({
-            userId,
-            tmdbId: movie.id,
-            title: movie.title,
-            poster: movie.poster_path
-              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-              : null,
-            year: movie.release_date?.slice(0, 4),
-            overview: movie.overview,
-            manuallyAdded: false
-          });
-          setIsFavorite(true);
-      } else {
-          // Auto-remove ONLY if auto-added (backend handles rule)
-          await removeFavorite(userId, movie.id);
-          setIsFavorite(false);
-      }
-
       setShowModal(false);
     } catch (error) {
       console.error("Error saving rating:", error);
