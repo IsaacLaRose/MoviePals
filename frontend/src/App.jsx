@@ -10,9 +10,8 @@ import Profile from "./components/Profile/Profile";
 import Ratings from "./components/Ratings/Ratings";
 import Favorites from "./components/Favorites/Favorites";
 import Friends from "./components/Friends/Friends";
-import Followers from "./components/Followers/Followers";
 import MovieDetails from "./components/MovieDetails/MovieDetails";
-import Trending from "./components/Trending/Trending";
+import FriendProfile from "./pages/FriendProfile/FriendProfile";
 
 
 
@@ -79,10 +78,7 @@ const [isLoggedIn, setIsLoggedIn] = useState(true);
 <Route path="/movie/:id" element={<MovieDetails />} />
 
 
-          <Route
-  path="/trending"
-  element={isLoggedIn ? <Trending /> : <Navigate to="/login" replace />}
-/>
+<Route path="/user/:username" element={<FriendProfile />} />
 
 
 
