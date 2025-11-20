@@ -1,126 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../../services/api";
+import { addFavorite, removeFavorite } from "../../services/favoritesService";
 import "./Ratings.css";
 
 function Ratings() {
-  const [ratings, setRatings] = useState([
-  {
-    id: 1,
-    title: "The Dark Knight",
-    poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
-    rating: 5,
-    comment: "One of the greatest superhero films ever made."
-  },
-  {
-    id: 2,
-    title: "Interstellar",
-    poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-    rating: 4,
-    comment: "Amazing soundtrack and emotional depth."
-  },
-  {
-    id: 3,
-    title: "Spider-Man: No Way Home",
-    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
-    rating: 5,
-    comment: "Pure nostalgia and insane crowd energy."
-  },
-  {
-    id: 4,
-    title: "Inception",
-    poster: "https://image.tmdb.org/t/p/w500/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg",
-    rating: 5,
-    comment: "Mind-bending in the best way."
-  },
-  {
-    id: 5,
-    title: "The Social Network",
-    poster: "https://image.tmdb.org/t/p/w500/n0ybibhJtQ5icDqTp8eRytcIHJx.jpg",
-    rating: 4,
-    comment: "Oscar-worthy dialogue. Zuckerberg era defined."
-  },
-  {
-    id: 6,
-    title: "Avatar",
-    poster: "https://image.tmdb.org/t/p/w500/kyeqWdyUXW608qlYkRqosgbbJyK.jpg",
-    rating: 4,
-    comment: "Visuals still unmatched."
-  },
-  {
-    id: 7,
-    title: "The Matrix",
-    poster: "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
-    rating: 5,
-    comment: "A genre-defining sci-fi masterpiece."
-  },
-  {
-    id: 8,
-    title: "Joker",
-    poster: "https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg",
-    rating: 5,
-    comment: "A dark, powerful character study."
-  },
-  {
-    id: 9,
-    title: "The Wolf of Wall Street",
-    poster: "https://image.tmdb.org/t/p/w500/pWHf4khOloNVfCxscsXFj3jj6gP.jpg",
-    rating: 5,
-    comment: "DiCaprio unleashed."
-  },
-  {
-    id: 10,
-    title: "Tenet",
-    poster: "https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg",
-    rating: 4,
-    comment: "A mind-bending time inversion trip."
-  },
-  {
-    id: 11,
-    title: "Oppenheimer",
-    poster: "https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg",
-    rating: 5,
-    comment: "A haunting portrait of a complicated genius."
-  },
-
-  {
-    id: 12,
-    title: "The Shawshank Redemption",
-    poster: "https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg",
-    rating: 5,
-    comment: "Widely considered the greatest film ever made."
-  },
-  {
-    id: 13,
-    title: "La La Land",
-    poster: "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg",
-    rating: 4,
-    comment: "A colorful emotional ride."
-  },
-  {
-    id: 14,
-    title: "Shutter Island",
-    poster: "https://image.tmdb.org/t/p/w500/kve20tXwUZpu4GUX8l6X7Z4jmL6.jpg",
-    rating: 5,
-    comment: "Insanely clever twist."
-  },
-  {
-    id: 15,
-    title: "The Avengers",
-    poster: "https://image.tmdb.org/t/p/w500/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg",
-    rating: 4,
-    comment: "The movie that changed everything."
-  },
-  {
-    id: 16,
-    title: "The Batman",
-    poster: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
-    rating: 5,
-    comment: "Dark, grounded, and beautifully shot."
-  }
-  ]);
-
+  const [ratings, setRatings] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [tempRating, setTempRating] = useState(0);
   const [tempComment, setTempComment] = useState("");
+
+  const userId = localStorage.getItem("userId");
+
+  // Load real ratings on page load
+  useEffect(() => {
+    async function loadRatings() {
+      try {
+        const res = await api.post("/api/getMoviesSeen", { userId });
+        setRatings(res.data.movies);
+      } catch (err) {
+        console.error("Error loading ratings:", err);
+      }
+    }
+
+    loadRatings();
+  }, [userId]);
 
   const openModal = (movie) => {
     setSelectedMovie(movie);
@@ -132,24 +35,79 @@ function Ratings() {
     setSelectedMovie(null);
   };
 
-  const saveChanges = () => {
-    setRatings((prev) =>
-      prev.map((m) =>
-        m.id === selectedMovie.id
-          ? { ...m, rating: tempRating, comment: tempComment }
-          : m
-      )
-    );
-    closeModal();
+  const saveChanges = async () => {
+    if (!selectedMovie) return;
+
+    try {
+      // 1️⃣ Update rating in backend
+      await api.post("/api/addupdateRating", {
+        userId,
+        tmdbId: selectedMovie.tmdbId,
+        title: selectedMovie.title,
+        year: selectedMovie.year,
+        poster: selectedMovie.poster,
+        overview: selectedMovie.overview,
+        rating: tempRating,
+        comment: tempComment,
+        dateViewed: selectedMovie.dateViewed || new Date().toISOString()
+      });
+
+      // 2️⃣ AUTO-FAVORITE LOGIC
+      if (tempRating === 5) {
+        await addFavorite({
+          userId,
+          tmdbId: selectedMovie.tmdbId,
+          title: selectedMovie.title,
+          poster: selectedMovie.poster,
+          year: selectedMovie.year,
+          overview: selectedMovie.overview,
+          manuallyAdded: false
+        });
+      } else {
+        // Remove only if it was auto-added
+        await removeFavorite(userId, selectedMovie.tmdbId);
+      }
+
+      // 3️⃣ Update UI immediately
+      setRatings((prev) =>
+        prev.map((m) =>
+          m.tmdbId === selectedMovie.tmdbId
+            ? { ...m, rating: tempRating, comment: tempComment }
+            : m
+        )
+      );
+
+      closeModal();
+    } catch (err) {
+      console.error("Error updating rating:", err);
+    }
   };
 
-  const deleteRating = () => {
-    setRatings((prev) => prev.filter((m) => m.id !== selectedMovie.id));
-    closeModal();
+  const deleteRating = async () => {
+    if (!selectedMovie) return;
+
+    try {
+      await api.post("/api/deleteMovieSeen", {
+        userId,
+        tmdbId: selectedMovie.tmdbId,
+      });
+
+      setRatings((prev) =>
+        prev.filter((m) => m.tmdbId !== selectedMovie.tmdbId)
+      );
+
+      // Also remove from favorites
+      await removeFavorite(userId, selectedMovie.tmdbId);
+
+      closeModal();
+    } catch (err) {
+      console.error("Error deleting rating:", err);
+    }
   };
 
-  // Count words (max 50)
-  const wordCount = tempComment.trim() ? tempComment.trim().split(/\s+/).length : 0;
+  const wordCount = tempComment.trim()
+    ? tempComment.trim().split(/\s+/).length
+    : 0;
 
   return (
     <div className="ratings-page">
@@ -158,7 +116,7 @@ function Ratings() {
       <div className="ratings-grid">
         {ratings.map((movie) => (
           <div
-            key={movie.id}
+            key={movie.tmdbId}
             className="ratings-card"
             onClick={() => openModal(movie)}
           >
@@ -167,7 +125,6 @@ function Ratings() {
             <div className="ratings-info">
               <h3>{movie.title}</h3>
 
-              {/* Gold Stars */}
               <div className="star-row">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <span key={i} className={i <= movie.rating ? "star filled" : "star"}>
@@ -176,24 +133,19 @@ function Ratings() {
                 ))}
               </div>
 
-              {/* Display Comment */}
               <p className="movie-comment">{movie.comment}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* =============================
-           MODAL
-      ============================== */}
+      {/* MODAL */}
       {selectedMovie && (
         <div className="modal-overlay">
           <div className="modal">
-
             <h2>Edit Rating</h2>
             <h3>{selectedMovie.title}</h3>
 
-            {/* Editable Stars */}
             <div className="star-select">
               {[1, 2, 3, 4, 5].map((i) => (
                 <span
@@ -206,11 +158,10 @@ function Ratings() {
               ))}
             </div>
 
-            {/* Comment Input */}
             <textarea
               className="comment-box"
               value={tempComment}
-              maxLength={350} // for safety
+              maxLength={350}
               onChange={(e) => {
                 const words = e.target.value.split(/\s+/);
                 if (words.length <= 50) {
