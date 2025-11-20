@@ -11,28 +11,35 @@ import Ratings from "./components/Ratings/Ratings";
 import Favorites from "./components/Favorites/Favorites";
 import Friends from "./components/Friends/Friends";
 import MovieDetails from "./components/MovieDetails/MovieDetails";
-
-// Your friend profile page
 import FriendProfile from "./pages/FriendProfile/FriendProfile";
 
 import "./App.css";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  // ✔ Load login state from localStorage
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("loggedIn") === "true"
+  );
 
   const handleLogin = () => {
     localStorage.setItem("loggedIn", "true");
     setIsLoggedIn(true);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("loggedIn");
+    setIsLoggedIn(false);
+  };
+
   return (
     <Router>
-      {isLoggedIn && <NavBar />}
+      {/* Navbar only when logged in */}
+      {isLoggedIn && <NavBar onLogout={handleLogout} />}
 
       <div className="App">
         <Routes>
-          
-          {/* Landing */}
+
+          {/* Landing page (when logged out) */}
           <Route
             path="/"
             element={
@@ -40,11 +47,11 @@ function App() {
             }
           />
 
-          {/* Auth */}
+          {/* Login/Register */}
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Pages */}
+          {/* Protected Routes */}
           <Route
             path="/search"
             element={isLoggedIn ? <MovieSearch /> : <Navigate to="/login" replace />}
@@ -60,7 +67,7 @@ function App() {
             element={isLoggedIn ? <Friends /> : <Navigate to="/login" replace />}
           />
 
-          {/* FRIEND PROFILE PAGE */}
+          {/* ✔ ONLY ONE FRIEND PROFILE ROUTE */}
           <Route
             path="/user/:username"
             element={isLoggedIn ? <FriendProfile /> : <Navigate to="/login" replace />}
@@ -68,7 +75,7 @@ function App() {
 
           <Route
             path="/movie/:id"
-            element={<MovieDetails />}
+            element={isLoggedIn ? <MovieDetails /> : <Navigate to="/login" replace />}
           />
 
           <Route
@@ -82,7 +89,7 @@ function App() {
           />
 
           {/* Logout */}
-          <Route path="/logout" element={<Navigate to="/" replace />} />
+          <Route path="/logout" element={<Navigate to="/login" replace />} />
 
         </Routes>
       </div>
