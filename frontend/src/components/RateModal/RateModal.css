@@ -1,27 +1,37 @@
+/* ============================
+   MODAL OVERLAY
+============================ */
 .rate-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.7);
+  inset: 0;
+  background: rgba(0,0,0,0.75);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
+  animation: fadeIn 0.25s ease;
 }
 
+/* ============================
+   MODAL CONTAINER
+============================ */
 .rate-modal {
   background: #111;
   padding: 2rem;
   width: 400px;
-  border-radius: 10px;
-  border: 1px solid rgba(185,28,28,0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(185,28,28,0.45);
   text-align: center;
   color: white;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.7);
+  animation: scaleIn 0.25s ease;
 }
 
-.star-row {
+/* ============================
+   STARS
+============================ */
+.star-row,
+.star-selector {
   margin: 1rem 0;
   font-size: 2.3rem;
 }
@@ -29,43 +39,119 @@
 .star {
   cursor: pointer;
   color: #444;
-  transition: 0.2s ease;
+  transition: 0.25s ease;
+  padding: 4px;
+}
+
+.star:hover {
+  color: gold;
+  transform: scale(1.15);
 }
 
 .star.filled {
   color: gold;
 }
 
+/* ============================
+   COMMENT BOX
+============================ */
 .rate-comment {
   width: 100%;
-  height: 80px;
+  height: 95px;
   margin-top: 1rem;
   background: #1a1a1a;
   color: white;
-  border: 1px solid rgba(185,28,28,0.3);
-  padding: 0.5rem;
-  border-radius: 5px;
+  border: 1px solid rgba(185,28,28,0.35);
+  padding: 0.7rem;
+  border-radius: 6px;
+  resize: none;
+  font-size: 1rem;
 }
 
-.save-rating-btn {
+/* ============================
+   FAVORITE BUTTON
+============================ */
+.fav-btn {
+  background: #b91c1c;
+  border: none;
+  padding: 0.75rem 1.3rem;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.25s ease-in-out;
+  width: 100%;
+}
+
+.fav-btn:hover {
+  background: #8a1515;
+  transform: translateY(-2px);
+}
+
+/* Heart bump animation */
+.heart-pop {
+  animation: heartPop 0.4s ease forwards;
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.6); }
+  100% { transform: scale(1); }
+}
+
+/* ============================
+   SAVE BUTTON
+============================ */
+.save-rating-btn,
+.save-btn {
   width: 100%;
   padding: 0.8rem;
-  margin-top: 1rem;
+  margin-top: 0.8rem;
   background: linear-gradient(135deg, #b91c1c, #7f1d1d);
   border: none;
   color: white;
   font-weight: 700;
   border-radius: 6px;
   cursor: pointer;
+  transition: 0.25s;
 }
 
-.close-modal-btn {
+.save-rating-btn:hover,
+.save-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* ============================
+   CANCEL BUTTON
+============================ */
+.close-modal-btn,
+.cancel-btn {
   width: 100%;
-  padding: 0.6rem;
-  margin-top: 0.7rem;
+  padding: 0.7rem;
   background: #333;
   border: none;
   color: white;
   border-radius: 6px;
   cursor: pointer;
+  margin-top: 0.6rem;
+  transition: 0.25s ease;
+}
+
+.close-modal-btn:hover,
+.cancel-btn:hover {
+  opacity: 0.85;
+}
+
+/* ============================
+   ANIMATIONS
+============================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
