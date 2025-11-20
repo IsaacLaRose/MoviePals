@@ -13,6 +13,10 @@ function Profile() {
     async function loadProfile() {
       try {
         const res = await api.post("/api/getUserProfile", { userId });
+
+        // Backend returns:
+        // { username, email, avatar, stats:{ratedCount,favoritesCount,friendsCount}, recentRatings:[] }
+
         setProfile(res.data);
       } catch (err) {
         console.error("Error loading profile:", err);
@@ -28,24 +32,29 @@ function Profile() {
 
   if (!profile) return <p className="profile-error">Failed to load profile.</p>;
 
-  const { username, avatar, stats, recentRatings } = profile;
+  const { username, email, avatar, stats, recentRatings } = profile;
 
   return (
     <div className="profile-page">
+
+      {/* TOP HEADER */}
       <div className="profile-header">
         <img className="profile-avatar" src={avatar} alt={username} />
         <h1>{username}</h1>
-        <p className="profile-email">{profile.email}</p>
+        <p className="profile-email">{email}</p>
 
+        {/* STATS */}
         <div className="profile-stats">
           <div className="stat-box">
             <h2>{stats.ratedCount}</h2>
             <p>Movies Rated</p>
           </div>
+
           <div className="stat-box">
             <h2>{stats.favoritesCount}</h2>
             <p>Favorites</p>
           </div>
+
           <div className="stat-box">
             <h2>{stats.friendsCount}</h2>
             <p>Friends</p>
@@ -53,6 +62,7 @@ function Profile() {
         </div>
       </div>
 
+      {/* RECENTLY RATED */}
       <div className="recent-section">
         <h2>Recently Rated</h2>
 
