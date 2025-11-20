@@ -1,31 +1,62 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import api from "../../services/api";
 import "./RateModal.css";
 
 function RateModal({ movie, onClose, onSave }) {
-  const [stars, setStars] = useState(0);
-  const [hover, setHover] = useState(0);
+  const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  useEffect(() => {
-    if (movie?.rating) setStars(movie.rating);
-  }, [movie]);
+  const userId = localStorage.getItem("userId");
 
-  if (!movie) return null;
+  // ❤️ ADD TO FAVORITES
+  const addToFavorites = async () => {
+    try {
+      await api.post("/api/addFavorite", {
+        userId,
+        tmdbId: movie.id,
+        title: movie.title,
+        poster: movie.poster,
+        year: movie.release_date?.slice(0, 4),
+        overview: movie.overview,
+        manuallyAdded: true,
+      });
+
+      alert("❤️ Added to Favorites!");
+    } catch (err) {
+      console.error("Error adding favorite:", err);
+      alert("Failed to add to favorites.");
+    }
+  };
+
+  // ⭐ Save button only saves rating
+  const saveRating = () => {
+    if (!rating) {
+      alert("Please pick a rating before saving.");
+      return;
+    }
+
+    onSave(rating, comment);
+  };
 
   return (
-    <div className="rate-modal-overlay" onClick={onClose}>
-      <div className="rate-modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Rate: {movie.title}</h2>
+    <div className="rate-modal-overlay">
+      <div className="rate-modal">
+        <h2>Rate {movie.title}</h2>
 
-        {/* ⭐ GOLD STARS */}
+        {/* Poster */}
+        <img
+          src={movie.poster}
+          alt={movie.title}
+          className="rate-modal-poster"
+        />
+
+        {/* ⭐ STAR SELECTOR */}
         <div className="star-row">
-          {[1, 2, 3, 4, 5].map((num) => (
+          {[1, 2, 3, 4, 5].map((n) => (
             <span
-              key={num}
-              className={`star ${(hover || stars) >= num ? "filled" : ""}`}
-              onMouseEnter={() => setHover(num)}
-              onMouseLeave={() => setHover(0)}
-              onClick={() => setStars(num)}
+              key={n}
+              className={n <= rating ? "star filled" : "star"}
+              onClick={() => setRating(n)}
             >
               ★
             </span>
@@ -34,23 +65,26 @@ function RateModal({ movie, onClose, onSave }) {
 
         {/* COMMENT BOX */}
         <textarea
-          maxLength={200}
           className="rate-comment"
-          placeholder="Add an optional comment..."
+          placeholder="Write a quick review... (optional)"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />
 
-        <button
-          className="save-rating-btn"
-          onClick={() => onSave(stars, comment)}
-        >
-          Save Rating
-        </button>
+        {/* BUTTON ROW */}
+        <div className="modal-buttons">
+          <button className="fav-btn" onClick={addToFavorites}>
+            ❤️ Favorite
+          </button>
 
-        <button className="close-modal-btn" onClick={onClose}>
-          Cancel
-        </button>
+          <button className="close-modal-btn" onClick={onClose}>
+            Cancel
+          </button>
+
+          <button className="save-rating-btn" onClick={saveRating}>
+            Save Rating
+          </button>
+        </div>
       </div>
     </div>
   );
