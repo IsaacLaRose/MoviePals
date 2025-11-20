@@ -4,39 +4,46 @@ import api from './api';
 
 export const authService = {
     
-  // Register new user
   register: async (userData) => {
-    const response = await api.post('/api/register', userData);
-    return response.data;
-  },
-
-
-
-  // Login user
-  login: async (credentials) => {
-    const response = await api.post('/api/login', credentials);
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    try {
+      const response = await api.post('/api/register', userData);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Registration failed. Please try again.';
+      throw new Error(message);
     }
-    return response.data;
   },
 
 
+  login: async (credentials) => {
+  const response = await api.post('/api/login', credentials);
 
-  // Logout user
+  const user = response.data;
+
+  localStorage.setItem("user", JSON.stringify(user));
+
+  if (user._id) {
+    localStorage.setItem("userId", user._id);
+  } else if (user.id) {
+    localStorage.setItem("userId", user.id);
+  }
+
+  return user;
+},
+
   logout: () => {
-    localStorage.removeItem('authToken');
     localStorage.removeItem('user');
   },
 
 
 
   // Verify email
-  verifyEmail: async (token) => {
-    const response = await api.get(`/api/verify/${token}`);
+  verifyEmail: async (token, id) => {
+    const response = await api.get(`/api/verifyEmail?token=${token}&id=${id}`);
     return response.data;
   },
+
+
 
 
 
