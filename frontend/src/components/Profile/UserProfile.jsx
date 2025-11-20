@@ -4,7 +4,7 @@ import api from "../../services/api";
 import "./Profile.css";
 
 function UserProfile() {
-  const { username } = useParams();
+  const { username } = useParams(); // <-- THIS IS THE ONLY PARAM!
   const [user, setUser] = useState(null);
   const [ratings, setRatings] = useState([]);
   const [friends, setFriends] = useState([]);
@@ -15,23 +15,29 @@ function UserProfile() {
 
   const loadProfile = async () => {
     try {
-      const profileRes = await api.post("/api/getUserProfile", { username });
-      const foundUser = profileRes.data.user;
-
-      setUser(foundUser);
-
-      const resRatings = await api.post("/api/getMoviesSeen", {
-        userId: foundUser._id,
+      // CALL API WITH CORRECT FIELD
+      const res = await api.post("/api/getUserProfileByUsername", {
+        username: username
       });
-      setRatings(resRatings.data.movies || []);
 
-      const resFriends = await api.post("/api/viewFriendsList", {
-        userId: foundUser._id,
+      setUser(res.data);
+
+      // Get ratings for that user
+      const ratingsRes = await api.post("/api/getMoviesSeen", {
+        userId: res.data.id
       });
-      setFriends(resFriends.data.friendsList || []);
+
+      setRatings(ratingsRes.data.movies || []);
+
+      // Load friend list
+      const friendsRes = await api.post("/api/viewFriendsList", {
+        userId: res.data.id
+      });
+
+      setFriends(friendsRes.data.friendsList || []);
 
     } catch (err) {
-      console.error("Error loading user profile:", err);
+      console.error("Profile Load Error:", err);
       setUser(null);
     }
   };
@@ -54,15 +60,6 @@ function UserProfile() {
           <span className="stat-value">{friends.length}</span>
           <span className="stat-label">Friends</span>
         </div>
-
-        <div className="profile-stat-item">
-          <span className="stat-value">0</span>
-          <span className="stat-label">Followers</span>
-        </div>
-      </div>
-
-      <div className="profile-bio-box">
-        {user.bio || "This user has no bio."}
       </div>
 
       <h2 className="profile-section-title">Ratings</h2>
