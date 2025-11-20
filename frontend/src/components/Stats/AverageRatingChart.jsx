@@ -13,7 +13,6 @@ function AverageRatingChart() {
   const data = [
   { month: "Oct", rating: 4.8 },
   { month: "Nov", rating: 4.5 },
-  { month: "Dec", rating: 4.9 }
 ];
 
   return (
