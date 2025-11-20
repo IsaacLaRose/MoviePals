@@ -5,10 +5,8 @@ import "./RateModal.css";
 function RateModal({ movie, onClose, onSave }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-
   const userId = localStorage.getItem("userId");
 
-  // ❤️ ADD TO FAVORITES
   const addToFavorites = async () => {
     try {
       await api.post("/api/addFavorite", {
@@ -20,38 +18,30 @@ function RateModal({ movie, onClose, onSave }) {
         overview: movie.overview,
         manuallyAdded: true,
       });
-
       alert("❤️ Added to Favorites!");
     } catch (err) {
-      console.error("Error adding favorite:", err);
-      alert("Failed to add to favorites.");
+      console.error(err);
+      alert("Failed to add favorite.");
     }
   };
 
-  // ⭐ Save button only saves rating
   const saveRating = () => {
-    if (!rating) {
-      alert("Please pick a rating before saving.");
-      return;
-    }
-
+    if (!rating) return alert("Please give a rating first.");
     onSave(rating, comment);
   };
 
   return (
-    <div className="rate-modal-overlay">
-      <div className="rate-modal">
-        <h2>Rate {movie.title}</h2>
+    <div className="rateModal-overlay">
+      <div className="rateModal-window">
+        <h2 className="rateModal-title">Rate {movie.title}</h2>
 
-        {/* Poster */}
         <img
           src={movie.poster}
           alt={movie.title}
-          className="rate-modal-poster"
+          className="rateModal-poster"
         />
 
-        {/* ⭐ STAR SELECTOR */}
-        <div className="star-row">
+        <div className="rateModal-stars">
           {[1, 2, 3, 4, 5].map((n) => (
             <span
               key={n}
@@ -63,27 +53,17 @@ function RateModal({ movie, onClose, onSave }) {
           ))}
         </div>
 
-        {/* COMMENT BOX */}
         <textarea
-          className="rate-comment"
+          className="rateModal-comment"
           placeholder="Write a quick review... (optional)"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />
 
-        {/* BUTTON ROW */}
-        <div className="modal-buttons">
-          <button className="fav-btn" onClick={addToFavorites}>
-            ❤️ Favorite
-          </button>
-
-          <button className="close-modal-btn" onClick={onClose}>
-            Cancel
-          </button>
-
-          <button className="save-rating-btn" onClick={saveRating}>
-            Save Rating
-          </button>
+        <div className="rateModal-buttons">
+          <button className="fav-btn" onClick={addToFavorites}>❤️ Favorite</button>
+          <button className="cancel-btn" onClick={onClose}>Cancel</button>
+          <button className="save-btn" onClick={saveRating}>Save Rating</button>
         </div>
       </div>
     </div>
