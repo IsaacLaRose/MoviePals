@@ -13,13 +13,13 @@ function MovieSearch() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // ⭐ NEW — Stats from backend
+  // ⭐ Backend Stats
   const [ratedCount, setRatedCount] = useState(0);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
   const userId = localStorage.getItem("userId");
 
-  // ⭐ Load ratings on page load
+  // ⭐ Load Stats on Page Load
   useEffect(() => {
     loadStats();
   }, []);
@@ -52,7 +52,7 @@ function MovieSearch() {
 
       const formatted = data.results.map((m) => ({
         ...m,
-        poster: m.poster, // Already formatted by backend
+        poster: m.poster, // already processed by backend
       }));
 
       setMovies(formatted);
@@ -61,20 +61,20 @@ function MovieSearch() {
         setError("No movies found. Try a different search.");
       }
     } catch (err) {
-      setError("Failed to search movies. Make sure the backend is running.");
+      setError("Failed to search movies. Is the backend running?");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // ⭐ open modal
+  // ⭐ Open rating modal
   const openRatingModal = (movie) => {
     setSelectedMovie(movie);
     setShowModal(true);
   };
 
-  // ⭐ save to backend + refresh stats
+  // ⭐ REAL BACKEND SAVE
   const saveRating = async (stars, comment) => {
     try {
       await api.post("/api/addupdateRating", {
@@ -93,14 +93,14 @@ function MovieSearch() {
     }
 
     setShowModal(false);
-    loadStats(); // ⭐ update counts real-time
+    loadStats(); // refresh real-time stats
   };
 
   return (
     <div className="dashboard-container">
       <div className="main-content">
-
-        {/* WELCOME HEADER */}
+        
+        {/* HEADER */}
         <div className="welcome-section">
           <h1>Welcome Back!</h1>
           <p>What movie would you like to rate today?</p>
@@ -122,14 +122,20 @@ function MovieSearch() {
           </div>
         </div>
 
-        {/* ⭐ DASHBOARD GRID (centered + equal size) */}
+        {/* DASHBOARD STATS */}
         <div className="dashboard-grid stats-grid">
-          <div className="dashboard-box" onClick={() => (window.location.href = "/ratings")}>
+          <div
+            className="dashboard-box"
+            onClick={() => (window.location.href = "/ratings")}
+          >
             <h2>{ratedCount}</h2>
             <p>Movies Rated</p>
           </div>
 
-          <div className="dashboard-box" onClick={() => (window.location.href = "/favorites")}>
+          <div
+            className="dashboard-box"
+            onClick={() => (window.location.href = "/favorites")}
+          >
             <h2>{favoriteCount}</h2>
             <p>Favorites</p>
           </div>
@@ -155,7 +161,7 @@ function MovieSearch() {
           {error && <p className="error-message">{error}</p>}
         </div>
 
-        {/* SEARCH RESULTS */}
+        {/* MOVIE RESULTS */}
         <div className="movie-results">
           {movies.map((movie) => (
             <div key={movie.id} className="movie-card">
@@ -173,7 +179,10 @@ function MovieSearch() {
                 <h3 className="movie-title">{movie.title}</h3>
                 <p className="movie-year">{movie.release_date?.slice(0, 4)}</p>
 
-                <button className="rate-button" onClick={() => openRatingModal(movie)}>
+                <button
+                  className="rate-button"
+                  onClick={() => openRatingModal(movie)}
+                >
                   Rate This Movie
                 </button>
               </div>
@@ -191,7 +200,11 @@ function MovieSearch() {
 
       {/* RATING MODAL */}
       {showModal && (
-        <RateModal movie={selectedMovie} onClose={() => setShowModal(false)} onSave={saveRating} />
+        <RateModal
+          movie={selectedMovie}
+          onClose={() => setShowModal(false)}
+          onSave={saveRating}
+        />
       )}
     </div>
   );
