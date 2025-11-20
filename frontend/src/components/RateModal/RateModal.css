@@ -1,29 +1,44 @@
-.rate-modal-overlay {
+/* ===== Overlay ===== */
+.rateModal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.7);
+  inset: 0;
+  background: rgba(0,0,0,0.75);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 5000;
 }
 
-.rate-modal {
+/* ===== Modal Window ===== */
+.rateModal-window {
+  width: 420px;
   background: #111;
-  padding: 2rem;
-  width: 400px;
+  padding: 1.8rem;
   border-radius: 10px;
-  border: 1px solid rgba(185,28,28,0.4);
-  text-align: center;
   color: white;
+  border: 1px solid rgba(185,28,28,0.45);
+  text-align: center;
+  animation: popIn 0.25s ease;
 }
 
-.star-row {
-  margin: 1rem 0;
-  font-size: 2.3rem;
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ===== Poster ===== */
+.rateModal-poster {
+  width: 100%;
+  height: 340px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+/* ===== Stars ===== */
+.rateModal-stars {
+  font-size: 2.2rem;
+  margin: 0.5rem 0 1rem 0;
 }
 
 .star {
@@ -36,51 +51,54 @@
   color: gold;
 }
 
-.rate-comment {
+/* ===== Comment ===== */
+.rateModal-comment {
   width: 100%;
-  height: 80px;
-  margin-top: 1rem;
+  height: 90px;
   background: #1a1a1a;
   color: white;
+  border-radius: 6px;
   border: 1px solid rgba(185,28,28,0.3);
-  padding: 0.5rem;
-  border-radius: 5px;
+  padding: 0.7rem;
+  resize: none;
+  margin-bottom: 1rem;
 }
 
-.save-rating-btn {
-  width: 100%;
-  padding: 0.8rem;
-  margin-top: 1rem;
-  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
-  border: none;
-  color: white;
-  font-weight: 700;
-  border-radius: 6px;
-  cursor: pointer;
+/* ===== Buttons ===== */
+.rateModal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
 }
 
-.close-modal-btn {
-  width: 100%;
-  padding: 0.6rem;
-  margin-top: 0.7rem;
-  background: #333;
-  border: none;
-  color: white;
+.fav-btn,
+.save-btn,
+.cancel-btn {
+  padding: 0.75rem;
   border-radius: 6px;
+  border: none;
   cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
 }
 
 .fav-btn {
   background: #b91c1c;
-  border: none;
-  padding: 0.6rem 1.2rem;
   color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s ease-in-out;
 }
-
 .fav-btn:hover {
   background: #8a1515;
-  transform: scale(1.05);
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+  color: white;
+}
+
+.cancel-btn {
+  background: #444;
+  color: white;
+}
+.cancel-btn:hover {
+  background: #555;
 }
