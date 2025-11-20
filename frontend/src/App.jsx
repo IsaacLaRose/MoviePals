@@ -11,20 +11,14 @@ import Ratings from "./components/Ratings/Ratings";
 import Favorites from "./components/Favorites/Favorites";
 import Friends from "./components/Friends/Friends";
 import MovieDetails from "./components/MovieDetails/MovieDetails";
+
+// Your friend profile page
 import FriendProfile from "./pages/FriendProfile/FriendProfile";
-
-
-
-
-
-
 
 import "./App.css";
 
 function App() {
-const [isLoggedIn, setIsLoggedIn] = useState(true);
-
-
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const handleLogin = () => {
     localStorage.setItem("loggedIn", "true");
@@ -33,14 +27,12 @@ const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   return (
     <Router>
-
-      {/* Navbar only when logged in */}
       {isLoggedIn && <NavBar />}
 
       <div className="App">
         <Routes>
-
-          {/* Landing page (no navbar) */}
+          
+          {/* Landing */}
           <Route
             path="/"
             element={
@@ -48,39 +40,36 @@ const [isLoggedIn, setIsLoggedIn] = useState(true);
             }
           />
 
-          {/* Login/Register */}
+          {/* Auth */}
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes */}
+          {/* Protected Pages */}
           <Route
             path="/search"
             element={isLoggedIn ? <MovieSearch /> : <Navigate to="/login" replace />}
           />
 
           <Route
-  path="/favorites"
-  element={isLoggedIn ? <Favorites /> : <Navigate to="/login" replace />}
-/>
-
-
-
-           
-           <Route path="/friends" element={<Friends />} />
-<Route path="/followers" element={<Followers />} />
-
+            path="/favorites"
+            element={isLoggedIn ? <Favorites /> : <Navigate to="/login" replace />}
+          />
 
           <Route
-  path="/user/:username"
-  element={isLoggedIn ? <UserProfile /> : <Navigate to="/login" replace />}
-/>
+            path="/friends"
+            element={isLoggedIn ? <Friends /> : <Navigate to="/login" replace />}
+          />
 
-<Route path="/movie/:id" element={<MovieDetails />} />
+          {/* FRIEND PROFILE PAGE */}
+          <Route
+            path="/user/:username"
+            element={isLoggedIn ? <FriendProfile /> : <Navigate to="/login" replace />}
+          />
 
-
-<Route path="/user/:username" element={<FriendProfile />} />
-
-
+          <Route
+            path="/movie/:id"
+            element={<MovieDetails />}
+          />
 
           <Route
             path="/profile"
@@ -94,8 +83,6 @@ const [isLoggedIn, setIsLoggedIn] = useState(true);
 
           {/* Logout */}
           <Route path="/logout" element={<Navigate to="/" replace />} />
-
-          
 
         </Routes>
       </div>
