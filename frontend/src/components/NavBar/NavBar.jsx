@@ -14,6 +14,7 @@ function NavBar() {
         <Link to="/search" className="nav-link">Search</Link>
         <Link to="/ratings" className="nav-link">My Ratings</Link>
         <Link to="/favorites" className="nav-link">Favorites</Link>
+        <Link to='/find-friends' className="nav-link">Friends</Link>
         <Link to="/profile" className="nav-link">Profile</Link>
         <Link to="/logout" className="nav-link">Logout</Link>
       </div>
@@ -29,6 +30,7 @@ function NavBar() {
           <Link to="/search" className="nav-link">Search</Link>
           <Link to="/ratings" className="nav-link">My Ratings</Link>
           <Link to="/favorites" className="nav-link">Favorites</Link>
+          <Link to='/find-friends' className="nav-link">Friends</Link>
           <Link to="/profile" className="nav-link">Profile</Link>
           <Link to="/logout" className="nav-link">Logout</Link>
         </div>
